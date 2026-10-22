@@ -1,16 +1,16 @@
 # Unidade 404: Futuro Não Encontrado
 
-> A precision arcade game where you play as a disposable assembly line robot. One mistake, and you are unplugged.
+A precision arcade game where you play as a disposable assembly line robot. One mistake, and you are unplugged.
 
 ---
 
-## 📌 About The Project
+## About The Project
 
 **Unidade 404: Futuro Não Encontrado** is a fast-paced 2D precision arcade game created for the **UFF Computer Science Academic Week Game Jam** (*Semana Acadêmica de Ciência da Computação - Universidade Federal Fluminense*).
 
 The factory never stops. Human managers make mistakes all the time and always have excuses. Robots don't have that privilege: each unit is mass-produced, numbered, and entirely disposable. You are one of those units. Screw, nail, or remove parts with precision. Make a single error, and the human operator pulls your plug—leaving the next unit to step up and take your place.
 
-### 🎮 Game Features & Design Pillars
+### Game Features & Design Pillars
 * **One-Button Gameplay:** Fully playable using only the **Left Mouse Button (LMB)**—no mouse movement, no aiming, no keyboard.
 * **High Score Precision Arcade:** Short, intense sessions (2 to 5 minutes) designed for quick restarts.
 * **Dark Industrial Humor:** Minimalist tone with a cynical corporate theme and dynamic robot generation on game over.
@@ -18,7 +18,7 @@ The factory never stops. Human managers make mistakes all the time and always ha
 
 ---
 
-## 🕹️ How to Play & Controls
+## How to Play & Controls
 
 ### Controls
 * **Left Mouse Button (LMB):** *[Add details here: screw, nail, remove parts, etc.]*
@@ -28,7 +28,7 @@ The factory never stops. Human managers make mistakes all the time and always ha
 
 ---
 
-## 🛠️ Built With
+## Built With
 
 * **Engine:** [Godot Engine 4.x](https://godotengine.org/)
 * **Language:** GDScript
@@ -37,18 +37,18 @@ The factory never stops. Human managers make mistakes all the time and always ha
 
 ---
 
-## 🚀 Technical Overview & Architecture
+## Technical Overview & Architecture
 
 *[Place for technical details: system architecture, state machines, signal logic, web export tips, etc.]*
 
 ---
 
-## 🌐 Play the Game
+## Play the Game
 
 
 ---
 
-## 👥 Credits & Team
+## Credits & Team
 
 Developed with ❤️ during the UFF Academic Week Game Jam by:
 
@@ -58,6 +58,6 @@ Developed with ❤️ during the UFF Academic Week Game Jam by:
 
 ---
 
-## 📄 License
+## License
 
 This project is developed for educational and game jam purposes.
