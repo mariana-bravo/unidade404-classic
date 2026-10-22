@@ -1,0 +1,48 @@
+
+# =====================================
+# GODOT 4 - UNIDADE 404
+# =====================================
+
+# Cache gerado automaticamente pelo Godot
+.godot/
+
+# Cache de importação de versões antigas
+.import/
+
+# Traduções compiladas automaticamente
+*.translation
+
+# Arquivos temporários
+*.tmp
+*.bak
+*.swp
+*~
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =====================================
+# EXPORTAÇÃO DO JOGO
+# =====================================
+
+# Builds geradas
+build/
+builds/
+export/
+exports/
+
+# Executáveis compilados
+*.exe
+
+# Arquivos de depuração
+*.pdb
+
+# =====================================
+# EDITORES
+# =====================================
+
+# Configurações locais dos editores
+.vscode/
+.idea/

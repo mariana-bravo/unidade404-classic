@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/intro.gd" id="1_script"]
+
+[node name="Intro" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Story" type="Label" parent="."]
+layout_mode = 0
+offset_left = 23.0
+offset_top = 48.0
+offset_right = 298.0
+offset_bottom = 132.0
+theme_override_font_sizes/font_size = 14
+text = ""
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 0
+offset_left = 42.0
+offset_top = 155.0
+offset_right = 297.0
+offset_bottom = 173.0
+theme_override_font_sizes/font_size = 10
+text = "CLIQUE: COMPLETAR / PRÓXIMO"
+autowrap_mode = 3

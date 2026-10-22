@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/scoreboard.gd" id="1_script"]
+
+[node name="Scoreboard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 38.0
+offset_right = 314.0
+offset_bottom = 71.0
+theme_override_font_sizes/font_size = 16
+text = "PLACAR — EM CONSTRUÇÃO"
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 0
+offset_left = 45.0
+offset_top = 132.0
+offset_right = 295.0
+offset_bottom = 155.0
+theme_override_font_sizes/font_size = 11
+text = "SEGURAR: VOLTAR AO MENU"
+autowrap_mode = 3
