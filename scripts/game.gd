@@ -6,11 +6,13 @@ extends Node2D
 @onready var click_reader: ClickReader = $ClickReader
 @onready var controller: InteractionController = $InteractionController
 @onready var board_generator: BoardGenerator = $BoardGenerator
+@onready var run_manager: RunManager = $RunManager
 
 # Referências aos elementos da interface.
 @onready var tool_label: Label = $ToolLabel
 @onready var phase_label: Label = $PhaseLabel
 @onready var feedback_label: Label = $FeedbackLabel
+@onready var time_label: Label = $TimeLabel
 
 var current_board: Array[int] = []
 
@@ -44,21 +46,34 @@ func _ready() -> void:
 	controller.replacement_requested.connect(_on_replacement_requested)
 	controller.wrong_action.connect(_on_wrong_action)
 	controller.phase_changed.connect(update_interface)
+	
+	run_manager.time_changed.connect(_on_time_changed)
+	run_manager.time_expired.connect(_on_time_expired)
+	run_manager.run_finished.connect(_on_run_finished)
+
+	run_manager.start_run()
+	run_manager.set_paused(true)
 
 	generate_new_board()
 	await conveyor.enter_board()
 
 	start_slot()
 	board_transitioning = false
-
+	
+	run_manager.score_changed.connect(func(points: int): print("PONTUACAO: ", points))
+	run_manager.level_changed.connect(func(new_level: int): print("NIVEL: ", new_level))
+	run_manager.time_changed.connect(func(seconds: float): pass)
+	
+	run_manager.set_paused(false)
+	
 func generate_new_board() -> void:
-	var level: int = GameState.level
-
-	current_board = board_generator.generate_board(level)
+	
+	current_board = board_generator.generate_board(run_manager.level)
 	current_slot = 0
 	conveyor.set_slots(current_board)
 	print(
-		"Nível: ", level,
+		"Nível: ", run_manager.level,
+		" | Peças concluídas: ", run_manager.pieces_done,
 		" | Slots: ", current_board.size(),
 		" | Tipos: ", current_board
 	)
@@ -122,8 +137,15 @@ func _on_step_completed() -> void:
 
 
 func _on_slot_completed() -> void:
-	score += 10
-
+	if not run_manager.running:
+		return
+		
+	# O slot atual terminou completamente.
+	var completed_kind: int = current_board[current_slot]
+	
+	# Concede pontos e recupera tempo.
+	run_manager.on_slot_completed(completed_kind)
+	
 	# Marca o slot concluído visualmente.
 	conveyor.update_slot_progress(current_slot + 1)
 
@@ -133,18 +155,18 @@ func _on_slot_completed() -> void:
 	if current_slot < current_board.size():
 		start_slot()
 		return
+		
+	# Todos os slots da peça foram concluídos.
+	run_manager.on_piece_completed()
 
 	# Todos os slots foram concluídos.
-	score += 50
 	board_transitioning = true
+	run_manager.set_paused(true)
 
 	feedback_label.text = "PECA CONCLUIDA!"
 
 	# A peça pronta sai.
 	await conveyor.exit_board()
-
-	# Progressão provisória até a integração com o Dev 3.
-	GameState.level += 1
 
 	# Gera a próxima peça.
 	generate_new_board()
@@ -154,17 +176,22 @@ func _on_slot_completed() -> void:
 
 	click_reader.reset()
 	board_transitioning = false
+	run_manager.set_paused(false)
 
 	start_slot()
 
 # Um slot defeituoso precisa de outra peça.
 func _on_replacement_requested() -> void:
 	replacing = true
+	run_manager.set_paused(true)
+
 	feedback_label.text = "AGUARDE A NOVA PECA..."
 	update_interface()
 
-	# Simula o braço auxiliar.
 	await get_tree().create_timer(1.0).timeout
+
+	if not run_manager.running:
+		return
 
 	controller.replacement_finished()
 	replacing = false
@@ -172,34 +199,78 @@ func _on_replacement_requested() -> void:
 	feedback_label.text = "NOVA PECA INSTALADA!"
 	update_interface()
 
+	run_manager.set_paused(false)
 
 # O jogador realizou uma ação incorreta.
 func _on_wrong_action(reason: String) -> void:
-	print("ERRO: ", reason)
-
-	feedback_label.text = reason
-	click_reader.reset()
-
-	# No protótipo, o erro reinicia o mesmo slot.
-	controller.set_slot(current_board[current_slot])
-	update_interface()
+	print("[DEBUG] Acao incorreta: ", reason)
+	run_manager.finish_run(RunManager.MOTIVO_ACAO_INCORRETA)
 
 func _on_click() -> void:
-	if board_transitioning:
+	if board_transitioning or not run_manager.running:
 		return
 
 	controller.gesture_click()
 
 
 func _on_double_click() -> void:
-	if board_transitioning:
+	if board_transitioning or not run_manager.running:
 		return
 
 	controller.gesture_double_click()
 
 
 func _on_hold() -> void:
-	if board_transitioning:
+	if board_transitioning or not run_manager.running:
 		return
 
 	controller.gesture_hold()
+
+
+# Atualiza o contador na tela.
+func _on_time_changed(seconds: float) -> void:
+	time_label.text = "TEMPO: %.2fs" % seconds
+
+	# Altera a cor quando o tempo está baixo.
+	if seconds <= 2.5:
+		time_label.add_theme_color_override(
+			"font_color",
+			Color.RED
+		)
+	else:
+		time_label.add_theme_color_override(
+			"font_color",
+			Color.WHITE
+		)
+
+
+# Chamado quando o tempo acaba.
+func _on_time_expired() -> void:
+	print("[DEBUG] O TEMPO ESGOTOU!")
+
+
+# Chamado quando a partida termina.
+func _on_run_finished(
+	reason: String,
+	final_score: int,
+	total_life_time: float
+) -> void:
+	# Bloqueia novas interações.
+	board_transitioning = true
+	click_reader.reset()
+
+	feedback_label.text = "GAME OVER!"
+
+	# Informações de depuração.
+	print("================================")
+	print("[DEBUG] GAME OVER")
+	print("[DEBUG] Motivo: ", reason)
+	print("[DEBUG] Pontuacao: ", final_score)
+	print("[DEBUG] Tempo de vida: %.2fs" % total_life_time)
+	print("================================")
+
+	# Mostra a mensagem antes de retornar ao menu.
+	await get_tree().create_timer(2.0).timeout
+
+	# Retorna ao menu principal.
+	get_tree().change_scene_to_file("res://scenes/menu.tscn")
