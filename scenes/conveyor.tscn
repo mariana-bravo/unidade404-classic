@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://cadkcgewd6svj"]
+
+[ext_resource type="Script" uid="uid://20bbdtceec85" path="res://scripts/conveyor.gd" id="1_kqxj7"]
+
+[node name="Conveyor" type="Node2D" unique_id=1639852914]
+script = ExtResource("1_kqxj7")
+
+[node name="Board" type="Node2D" parent="." unique_id=237511830]
+
+[node name="BoardVisual" type="ColorRect" parent="Board" unique_id=439903153]
+offset_left = -108.0
+offset_top = -24.0
+offset_right = 108.0
+offset_bottom = 24.0
+mouse_filter = 2
+color = Color(0.39607844, 0.45490196, 0.52156866, 1)
+
+[node name="Slots" type="Node2D" parent="Board" unique_id=707520013]

@@ -6,6 +6,7 @@ signal step_completed
 signal slot_completed
 signal replacement_requested
 signal wrong_action(reason: String)
+signal phase_changed
 
 enum Tool{
 	NONE,
@@ -23,6 +24,7 @@ enum SlotKind{
 enum Phase{
 	SELECT_TOOL,
 	ACT,
+	UNSCREW_HOLD,
 	WAIT_REPLACEMENT,
 	ACT_NO_SELECT,
 	DONE
@@ -46,41 +48,88 @@ func gesture_double_click() -> void:
 func gesture_hold() -> void:
 	_gesture("hold")
 
+
 func _gesture(gesture: String) -> void:
+
+	# Ignora gestos durante a substituição
+	# ou depois da conclusão do slot.
 	if phase == Phase.WAIT_REPLACEMENT or phase == Phase.DONE:
 		return
-	
+
+	# Seleção da ferramenta.
 	if phase == Phase.SELECT_TOOL:
-		#Segurar não seleciona ferramenta
 		if gesture == "hold":
 			return
-		var selected:Tool = (Tool.HAMMER if gesture == "click" else Tool.SCREWDRIVER)
-		var expected: Tool = (Tool.HAMMER if kind == SlotKind.NAIL or kind == SlotKind.BAD_NAIL else Tool.SCREWDRIVER)
-		
-		#Ferramenta incorreta
+
+		var selected: Tool = (
+			Tool.HAMMER
+			if gesture == "click"
+			else Tool.SCREWDRIVER
+		)
+
+		var expected: Tool = (
+			Tool.HAMMER
+			if kind == SlotKind.NAIL or kind == SlotKind.BAD_NAIL
+			else Tool.SCREWDRIVER
+		)
+
 		if selected != expected:
 			wrong_action.emit("FERRAMENTA ERRADA")
 			return
-		
-		#Ferramenta correta
+
 		tool = selected
 		phase = Phase.ACT
 		tool_selected.emit(int(tool))
 		return
-	
-	var expected_gesture := ("hold" if kind == SlotKind.SCREW or kind == SlotKind.RUSTY_SCREW else ("double" if kind == SlotKind.BAD_NAIL and phase == Phase.ACT else "click"))
-	
+
+	# Parafuso enferrujado:
+	# primeiro clique simples da remoção.
+	if kind == SlotKind.RUSTY_SCREW and phase == Phase.ACT:
+		if gesture != "click":
+			wrong_action.emit("CLIQUE ANTES DE DESAPARAFUSAR")
+			return
+
+		phase = Phase.UNSCREW_HOLD
+		phase_changed.emit()
+		return
+
+	# Parafuso enferrujado:
+	# agora exige um clique longo.
+	if phase == Phase.UNSCREW_HOLD:
+		if gesture != "hold":
+			wrong_action.emit("SEGURE PARA DESAPARAFUSAR")
+			return
+
+		step_completed.emit()
+		phase = Phase.WAIT_REPLACEMENT
+		replacement_requested.emit()
+		return
+
+	# Demais ações, incluindo a instalação
+	# do novo parafuso após a substituição.
+	var expected_gesture := (
+        "hold"
+		if kind == SlotKind.SCREW or kind == SlotKind.RUSTY_SCREW
+		else (
+            "double"
+			if kind == SlotKind.BAD_NAIL and phase == Phase.ACT
+			else "click"
+		)
+	)
+
 	if gesture != expected_gesture:
 		wrong_action.emit("GESTO ERRADO")
 		return
-	
+
 	step_completed.emit()
-	if (kind == SlotKind.BAD_NAIL or kind == SlotKind.RUSTY_SCREW) and phase == Phase.ACT:
+
+	if kind == SlotKind.BAD_NAIL and phase == Phase.ACT:
 		phase = Phase.WAIT_REPLACEMENT
 		replacement_requested.emit()
 	else:
 		phase = Phase.DONE
 		slot_completed.emit()
+
 		
 # Chamado após o braço auxiliar substituir a peça.
 func replacement_finished() -> void:
