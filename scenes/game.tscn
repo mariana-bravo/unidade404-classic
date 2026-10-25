@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://cslmq2arup1fp" path="res://scripts/click_reader.gd" id="1_yqjtg"]
 [ext_resource type="PackedScene" uid="uid://cadkcgewd6svj" path="res://scenes/conveyor.tscn" id="2_lbhrr"]
 [ext_resource type="Script" uid="uid://cej7vg6a82qd6" path="res://scripts/interaction_controller.gd" id="2_lnu2h"]
+[ext_resource type="Script" uid="uid://dxrhwxvummwol" path="res://scripts/run_manager.gd" id="3_p57ef"]
 [ext_resource type="Script" uid="uid://ptmscpkv0nyw" path="res://scripts/board_generator.gd" id="5_iywne"]
 
 [node name="Game" type="Node2D" unique_id=32358537]
@@ -17,6 +18,9 @@ color = Color(0.09019608, 0.105882354, 0.14117648, 1)
 
 [node name="Conveyor" parent="." unique_id=1639852914 instance=ExtResource("2_lbhrr")]
 demo_mode = false
+
+[node name="RunManager" type="Node" parent="." unique_id=1042769601]
+script = ExtResource("3_p57ef")
 
 [node name="InteractionController" type="Node" parent="." unique_id=607678116]
 script = ExtResource("2_lnu2h")
@@ -59,3 +63,10 @@ offset_right = 153.0
 offset_bottom = 173.0
 scale = Vector2(0.5, 0.5)
 text = "AGUARDANDO..."
+
+[node name="TimeLabel" type="Label" parent="." unique_id=178421427]
+offset_left = 209.0
+offset_top = 150.0
+offset_right = 313.0
+offset_bottom = 173.0
+text = "TEMPO: 8.00s"
