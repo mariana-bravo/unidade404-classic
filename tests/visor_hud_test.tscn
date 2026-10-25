@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cilsxcn36t77j"]
+
+[ext_resource type="Script" uid="uid://c7o6h3d30uqnt" path="res://tests/visor_hud_test.gd" id="1_t1yjg"]
+
+[node name="VisorHudTest" type="Node" unique_id=811173581]
+script = ExtResource("1_t1yjg")
