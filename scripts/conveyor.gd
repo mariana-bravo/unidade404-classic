@@ -30,6 +30,7 @@ const COLOR_COMPLETED := Color("#28654c")
 var slot_visuals: Array[ColorRect] = []
 
 var moving: bool = false
+var _movement_tween: Tween
 
 
 func _ready() -> void:
@@ -50,6 +51,7 @@ func enter_board() -> void:
 	board.position = ENTRY_POSITION
 
 	var tween := create_tween()
+	_movement_tween = tween
 	tween.set_trans(Tween.TRANS_LINEAR)
 
 	tween.tween_property(
@@ -73,6 +75,7 @@ func exit_board() -> void:
 	moving = true
 
 	var tween := create_tween()
+	_movement_tween = tween
 	tween.set_trans(Tween.TRANS_LINEAR)
 
 	tween.tween_property(
@@ -168,3 +171,20 @@ func update_slot_progress(completed_count: int) -> void:
 
 		else:
 			slot_visuals[i].color = COLOR_PENDING
+
+
+# Interrompe o movimento no game over e libera quem aguardava a animação.
+func stop_movement() -> void:
+	if is_instance_valid(_movement_tween) and _movement_tween.is_running():
+		_movement_tween.kill()
+		_movement_tween.finished.emit()
+	moving = false
+
+
+func pulse_slot(index: int) -> void:
+	if index < 0 or index >= slot_visuals.size():
+		return
+	var slot := slot_visuals[index]
+	slot.modulate = Color(1.4, 2.0, 1.4)
+	var pulse := slot.create_tween()
+	pulse.tween_property(slot, "modulate", Color.WHITE, 0.18)

@@ -7,6 +7,10 @@
 [ext_resource type="Script" uid="uid://dxrhwxvummwol" path="res://scripts/run_manager.gd" id="3_p57ef"]
 [ext_resource type="Script" uid="uid://ptmscpkv0nyw" path="res://scripts/board_generator.gd" id="5_iywne"]
 
+[ext_resource type="PackedScene" path="res://scenes/visor_hud.tscn" id="7_hud"]
+
+[ext_resource type="Script" path="res://scripts/game_feedback.gd" id="8_feedback"]
+
 [node name="Game" type="Node2D" unique_id=32358537]
 script = ExtResource("1_lnu2h")
 
@@ -33,18 +37,12 @@ script = ExtResource("5_iywne")
 script = ExtResource("1_yqjtg")
 metadata/_custom_type_script = "uid://cslmq2arup1fp"
 
-[node name="TitleLabel" type="Label" parent="." unique_id=1761746331]
-offset_left = 80.0
-offset_top = 12.0
-offset_right = 243.0
-offset_bottom = 35.0
-text = "UNIDADE 404 - TESTE"
-
 [node name="ToolLabel" type="Label" parent="." unique_id=823941007]
 offset_left = 25.0
 offset_top = 130.0
 offset_right = 222.0
 offset_bottom = 153.00008
+mouse_filter = 2
 scale = Vector2(0.5, 0.5)
 text = "FERRAMENTA: NENHUMA"
 
@@ -53,6 +51,7 @@ offset_left = 25.0
 offset_top = 140.0
 offset_right = 167.0
 offset_bottom = 163.00006
+mouse_filter = 2
 scale = Vector2(0.5, 0.5)
 text = "FASE: SELECIONAR"
 
@@ -61,12 +60,12 @@ offset_left = 25.0
 offset_top = 150.0
 offset_right = 153.0
 offset_bottom = 173.0
+mouse_filter = 2
 scale = Vector2(0.5, 0.5)
 text = "AGUARDANDO..."
 
-[node name="TimeLabel" type="Label" parent="." unique_id=178421427]
-offset_left = 209.0
-offset_top = 150.0
-offset_right = 313.0
-offset_bottom = 173.0
-text = "TEMPO: 8.00s"
+[node name="VisorHud" parent="." instance=ExtResource("7_hud")]
+
+[node name="InputFeedback" type="Control" parent="."]
+mouse_filter = 2
+script = ExtResource("8_feedback")

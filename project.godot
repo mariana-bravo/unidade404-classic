@@ -22,6 +22,7 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 
 Config="*res://scripts/autoload/config.gd"
 GameState="*res://scripts/autoload/game_state.gd"
+ScoreboardData="*res://scripts/autoload/scoreboard_data.gd"
 
 [display]
 

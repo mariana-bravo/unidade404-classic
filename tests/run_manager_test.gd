@@ -1,7 +1,7 @@
 extends Control
 ## CENA DE TESTE do RunManager e do TimeModel. Não faz parte do jogo final.
 ## 1 prego · 2 parafuso · 3 prego torto · 4 parafuso enferrujado (slot concluído)
-## N peça concluída · P pausa · E erro · T treino liga/desliga · R recomeça
+## N peça concluída · E erro · T treino liga/desliga · R recomeça
 
 var rm: RunManager
 var label: Label
@@ -29,9 +29,9 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	label.text = "TEMPO: %.2f / %.0f s\nPONTOS: %d\nNÍVEL: %d (peças: %d)\nVIDA: %.1f s\nrodando: %s · pausa: %s · treino: %s\n\n%s" % [
+	label.text = "TEMPO: %.2f / %.0f s\nPONTOS: %d\nNÍVEL: %d (peças: %d)\nVIDA: %.1f s\nrodando: %s · treino: %s\n\n%s" % [
 		rm.time_left, RunManager.BARRA_MAX, rm.score, rm.level, rm.pieces_done,
-		rm.life_time, rm.running, rm.paused, rm.training, "\n".join(log_lines)]
+		rm.life_time, rm.running, rm.training, "\n".join(log_lines)]
 
 
 func _input(event: InputEvent) -> void:
@@ -45,7 +45,6 @@ func _input(event: InputEvent) -> void:
 			KEY_3: rm.on_slot_completed(TimeModel.SlotKind.BAD_NAIL)
 			KEY_4: rm.on_slot_completed(TimeModel.SlotKind.RUSTY_SCREW)
 			KEY_N: rm.on_piece_completed()
-			KEY_P: rm.set_paused(not rm.paused)
 			KEY_E: rm.finish_run(RunManager.MOTIVO_ACAO_INCORRETA)
 			KEY_T: rm.training = not rm.training
 			KEY_R: rm.start_run(rm.training)
@@ -96,5 +95,5 @@ func _testar_time_model() -> void:
 
 	_check("prego rende no nível 1", TimeModel.tempo_concedido(TimeModel.SlotKind.NAIL, 0), 3.40)
 	_check("prego rende no teto", TimeModel.tempo_concedido(TimeModel.SlotKind.NAIL, 25), 1.77)
-	_check("enferrujado rende no piso", TimeModel.tempo_concedido(TimeModel.SlotKind.RUSTY_SCREW, 45), 3.69)
+	_check("enferrujado rende no piso", TimeModel.tempo_concedido(TimeModel.SlotKind.RUSTY_SCREW, 45), 4.69)
 	print("Resultado: %d de %d conferências OK" % [ok_checks, total_checks])

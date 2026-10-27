@@ -12,25 +12,27 @@ extends Node2D
 @onready var tool_label: Label = $ToolLabel
 @onready var phase_label: Label = $PhaseLabel
 @onready var feedback_label: Label = $FeedbackLabel
-@onready var time_label: Label = $TimeLabel
+@onready var input_feedback: GameFeedback = $InputFeedback
+@onready var hud: VisorHud = $VisorHud
+var _previous_mouse_mode: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
 
 var current_board: Array[int] = []
-
-
-const SLOT_NAMES = [
-	"PREGO",
-	"PARAFUSO",
-	"PREGO TORTO",
-    "PARAFUSO ENFERRUJADO"
-]
-
 var current_slot: int = 0
-var score: int = 0
 var replacing: bool = false
 var board_transitioning: bool = true
 
 func _ready() -> void:
+	_previous_mouse_mode = Input.mouse_mode
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	# Também funciona ao executar esta cena diretamente no editor.
+	if GameState.robot_name.is_empty():
+		GameState.new_robot()
+	GameState.robot_changed.connect(_on_robot_changed)
+	_on_robot_changed(GameState.robot_name, GameState.robot_gender, GameState.serial, GameState.color_index)
+	hud.set_best(ScoreboardData.get_best_score())
+	ScoreboardData.changed.connect(_on_scoreboard_changed)
 	# O jogo utiliza reconhecimento de duplo clique.
+	click_reader.set_enabled(false)
 	click_reader.mode = ClickReader.Mode.WINDOWED
 	click_reader.hold_completion_time = Config.TEMPO_APARAFUSAR
 
@@ -38,6 +40,9 @@ func _ready() -> void:
 	click_reader.click.connect(_on_click)
 	click_reader.double_click.connect(_on_double_click)
 	click_reader.hold_completed.connect(_on_hold)
+	click_reader.press_started.connect(controller.begin_press)
+	click_reader.hold_started.connect(controller.begin_press)
+	click_reader.press_released.connect(controller.end_press)
 
 	# Conecta os eventos do controlador ao jogo.
 	controller.tool_selected.connect(_on_tool_selected)
@@ -46,28 +51,28 @@ func _ready() -> void:
 	controller.replacement_requested.connect(_on_replacement_requested)
 	controller.wrong_action.connect(_on_wrong_action)
 	controller.phase_changed.connect(update_interface)
-	
-	run_manager.time_changed.connect(_on_time_changed)
+
+	run_manager.time_changed.connect(hud.set_time)
+	run_manager.score_changed.connect(hud.set_score)
+	run_manager.level_changed.connect(hud.set_level)
 	run_manager.time_expired.connect(_on_time_expired)
 	run_manager.run_finished.connect(_on_run_finished)
 
+	input_feedback.bind_input(click_reader, controller, run_manager)
 	run_manager.start_run()
-	run_manager.set_paused(true)
 
 	generate_new_board()
 	await conveyor.enter_board()
+	if not run_manager.running:
+		return
 
 	start_slot()
 	board_transitioning = false
-	
-	run_manager.score_changed.connect(func(points: int): print("PONTUACAO: ", points))
-	run_manager.level_changed.connect(func(new_level: int): print("NIVEL: ", new_level))
-	run_manager.time_changed.connect(func(seconds: float): pass)
-	
-	run_manager.set_paused(false)
-	
+
+	click_reader.set_enabled(true)
+
 func generate_new_board() -> void:
-	
+
 	current_board = board_generator.generate_board(run_manager.level)
 	current_slot = 0
 	conveyor.set_slots(current_board)
@@ -107,7 +112,7 @@ func update_interface() -> void:
 
 		InteractionController.Phase.ACT:
 			phase_label.text = "FASE: EXECUTAR ACAO"
-			
+
 		InteractionController.Phase.UNSCREW_HOLD:
 			phase_label.text = "FASE: SEGURE PARA REMOVER"
 
@@ -139,13 +144,17 @@ func _on_step_completed() -> void:
 func _on_slot_completed() -> void:
 	if not run_manager.running:
 		return
-		
+
 	# O slot atual terminou completamente.
 	var completed_kind: int = current_board[current_slot]
-	
+
+	input_feedback.complete_slot(current_slot == current_board.size() - 1)
+	conveyor.pulse_slot(current_slot)
+
 	# Concede pontos e recupera tempo.
-	run_manager.on_slot_completed(completed_kind)
-	
+	var tempo_esteira := 2.0 * conveyor.movement_duration if current_slot == current_board.size() - 1 else 0.0
+	run_manager.on_slot_completed(completed_kind, tempo_esteira)
+
 	# Marca o slot concluído visualmente.
 	conveyor.update_slot_progress(current_slot + 1)
 
@@ -154,41 +163,46 @@ func _on_slot_completed() -> void:
 	# Se ainda existem slots, continua na mesma peça.
 	if current_slot < current_board.size():
 		start_slot()
+		click_reader.block_for(Config.TRAVA_POS_ACAO)
 		return
-		
+
 	# Todos os slots da peça foram concluídos.
 	run_manager.on_piece_completed()
 
 	# Todos os slots foram concluídos.
 	board_transitioning = true
-	run_manager.set_paused(true)
+	click_reader.set_enabled(false)
 
 	feedback_label.text = "PECA CONCLUIDA!"
 
 	# A peça pronta sai.
 	await conveyor.exit_board()
+	if not run_manager.running:
+		return
 
 	# Gera a próxima peça.
 	generate_new_board()
 
 	# A nova peça entra.
 	await conveyor.enter_board()
+	if not run_manager.running:
+		return
 
 	click_reader.reset()
 	board_transitioning = false
-	run_manager.set_paused(false)
+	click_reader.set_enabled(true)
 
 	start_slot()
 
 # Um slot defeituoso precisa de outra peça.
 func _on_replacement_requested() -> void:
 	replacing = true
-	run_manager.set_paused(true)
+	click_reader.set_enabled(false)
 
 	feedback_label.text = "AGUARDE A NOVA PECA..."
 	update_interface()
 
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(Config.TEMPO_SUBSTITUICAO).timeout
 
 	if not run_manager.running:
 		return
@@ -199,7 +213,7 @@ func _on_replacement_requested() -> void:
 	feedback_label.text = "NOVA PECA INSTALADA!"
 	update_interface()
 
-	run_manager.set_paused(false)
+	click_reader.set_enabled(true)
 
 # O jogador realizou uma ação incorreta.
 func _on_wrong_action(reason: String) -> void:
@@ -207,41 +221,35 @@ func _on_wrong_action(reason: String) -> void:
 	run_manager.finish_run(RunManager.MOTIVO_ACAO_INCORRETA)
 
 func _on_click() -> void:
-	if board_transitioning or not run_manager.running:
+	if board_transitioning or replacing or not run_manager.running:
 		return
 
 	controller.gesture_click()
 
 
 func _on_double_click() -> void:
-	if board_transitioning or not run_manager.running:
+	if board_transitioning or replacing or not run_manager.running:
 		return
 
 	controller.gesture_double_click()
 
 
 func _on_hold() -> void:
-	if board_transitioning or not run_manager.running:
+	if board_transitioning or replacing or not run_manager.running:
 		return
 
 	controller.gesture_hold()
 
 
-# Atualiza o contador na tela.
-func _on_time_changed(seconds: float) -> void:
-	time_label.text = "TEMPO: %.2fs" % seconds
+func _on_scoreboard_changed() -> void:
+	hud.set_best(ScoreboardData.get_best_score())
 
-	# Altera a cor quando o tempo está baixo.
-	if seconds <= 2.5:
-		time_label.add_theme_color_override(
-			"font_color",
-			Color.RED
-		)
-	else:
-		time_label.add_theme_color_override(
-			"font_color",
-			Color.WHITE
-		)
+func _exit_tree() -> void:
+	Input.mouse_mode = _previous_mouse_mode
+
+func _on_robot_changed(robot_name: String, _gender: String, serial: int, color_index: int) -> void:
+	hud.set_robot(robot_name, serial)
+	hud.set_tint(Config.PALETA[color_index])
 
 
 # Chamado quando o tempo acaba.
@@ -257,9 +265,13 @@ func _on_run_finished(
 ) -> void:
 	# Bloqueia novas interações.
 	board_transitioning = true
-	click_reader.reset()
+	click_reader.set_enabled(false)
 
-	feedback_label.text = "GAME OVER!"
+	conveyor.stop_movement()
+	var ranked := false
+	if not run_manager.training:
+		ranked = ScoreboardData.submit_run(GameState.robot_name, final_score, total_life_time)
+	feedback_label.text = "ENTROU NO PLACAR!" if ranked else "GAME OVER!"
 
 	# Informações de depuração.
 	print("================================")
