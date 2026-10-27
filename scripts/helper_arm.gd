@@ -1,15 +1,25 @@
-
 class_name HelperArm
 extends Node2D
 
-## Avisa quando a substituição visual terminou.
-## Signals when the visual replacement has finished.
+## Entrega visual da peça e fim de toda a animação são eventos separados.
+signal part_placed
 signal replacement_finished
 
 const U = preload("res://scripts/ui/industrial_ui.gd")
-
-# Tempos e posições ajustáveis no Inspector.
-# Timings and positions configurable in the Inspector.
+const NAIL_PART = preload("res://art/Parts/404_wait_nail.png")
+const SCREW_PART = preload("res://art/Parts/404_wait_screw.png")
+# Os PNGs incluem o módulo metálico. Remove apenas o cinza da placa na pinça.
+const CARRIED_PART_SHADER := """shader_type canvas_item;
+render_mode unshaded;
+void fragment() {
+	vec4 pixel = texture(TEXTURE, UV);
+	if (distance(pixel.rgb, vec3(109.0, 117.0, 141.0) / 255.0) < 0.005) {
+		discard;
+	}
+	COLOR = pixel;
+}
+"""
+var _part_sprite: Sprite2D
 @export var travel_duration: float = 0.55
 @export var placement_pause: float = 0.45
 @export var entry_position: Vector2 = Vector2(160.0, -42.0)
@@ -18,79 +28,89 @@ const U = preload("res://scripts/ui/industrial_ui.gd")
 var _busy: bool = false
 var _carrying_part: bool = false
 var _replacement_kind: int = InteractionController.SlotKind.NAIL
-
+var _operation: int = 0
+var _movement_tween: Tween
 
 func _ready() -> void:
-	# O braço começa fora da tela.
-	# Start the arm off-screen.
+	_part_sprite = Sprite2D.new()
+	_part_sprite.centered = false
+	_part_sprite.visible = false
+	var shader := Shader.new()
+	shader.code = CARRIED_PART_SHADER
+	var part_material := ShaderMaterial.new()
+	part_material.shader = shader
+	_part_sprite.material = part_material
+	add_child(_part_sprite)
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	position = entry_position
 	visible = false
 
-
-## Anima a substituição de uma peça.
-## Animates the replacement of a part.
-##
-## Recebe o tipo antigo ou o novo; visualmente, sempre coloca
-## um prego ou parafuso em boas condições.
-## Accepts the old or new kind; visually places a clean nail or screw.
-func replace_part(requested_kind: int = InteractionController.SlotKind.NAIL) -> void:
+## O alvo opcional é global. Sem alvo, usa as posições configuradas no Inspector.
+func replace_part(requested_kind: int = InteractionController.SlotKind.NAIL, target: Vector2 = Vector2.INF) -> void:
 	if _busy:
 		return
-
 	_busy = true
-
-	if (
-		requested_kind == InteractionController.SlotKind.SCREW
-		or requested_kind == InteractionController.SlotKind.RUSTY_SCREW
-	):
-		_replacement_kind = InteractionController.SlotKind.SCREW
-	else:
-		_replacement_kind = InteractionController.SlotKind.NAIL
-
+	_operation += 1
+	var operation := _operation
+	_replacement_kind = InteractionController.SlotKind.SCREW if requested_kind == InteractionController.SlotKind.SCREW or requested_kind == InteractionController.SlotKind.RUSTY_SCREW else InteractionController.SlotKind.NAIL
+	var destination := work_position
+	var entry := entry_position
+	if target != Vector2.INF:
+		var head_offset := 12.0 if _replacement_kind == InteractionController.SlotKind.NAIL else 16.0
+		destination = get_parent().to_local(target) - Vector2(0, head_offset)
+		entry.x = destination.x
 	_carrying_part = true
-	position = entry_position
+	var screw := _replacement_kind == InteractionController.SlotKind.SCREW
+	var region := Rect2(0, 4, 7, 9) if screw else Rect2(0, 5, 6, 8)
+	var texture := AtlasTexture.new()
+	texture.atlas = SCREW_PART if screw else NAIL_PART
+	texture.region = region
+	texture.filter_clip = true
+	_part_sprite.texture = texture
+	var center_y := 16.0 if screw else 12.0
+	_part_sprite.position = Vector2(-region.size.x / 2.0, center_y - region.size.y / 2.0)
+	_part_sprite.visible = true
+	position = entry
 	visible = true
 	queue_redraw()
-
-	# O braço desce com a peça de reposição.
-	# The arm descends while carrying the replacement part.
-	await _move_to(work_position, true)
-
-	# Simula o momento em que a peça é colocada no slot.
-	# Simulates placing the part into the slot.
+	await _move_to(destination, true)
+	if operation != _operation:
+		return
 	await get_tree().create_timer(placement_pause).timeout
-
+	if operation != _operation:
+		return
 	_carrying_part = false
+	_part_sprite.visible = false
 	queue_redraw()
-
-	# Pequena pausa antes de retirar o braço.
-	# Brief pause before withdrawing the arm.
+	part_placed.emit()
 	await get_tree().create_timer(0.12).timeout
-
-	# O braço volta para fora da tela.
-	# The arm withdraws off-screen.
-	await _move_to(entry_position, false)
-
+	if operation != _operation:
+		return
+	await _move_to(entry, false)
+	if operation != _operation:
+		return
 	visible = false
 	_busy = false
-
-	# O jogo pode continuar a partir deste sinal.
-	# Gameplay can continue after this signal.
 	replacement_finished.emit()
 
-
-# Move o braço com uma transição suave.
-# Moves the arm with a smooth transition.
 func _move_to(target: Vector2, entering: bool) -> void:
-	var tween := create_tween()
-	tween.set_trans(Tween.TRANS_SINE)
-	tween.set_ease(Tween.EASE_OUT if entering else Tween.EASE_IN)
-	tween.tween_property(self, "position", target, travel_duration)
-	await tween.finished
+	_movement_tween = create_tween()
+	_movement_tween.set_trans(Tween.TRANS_SINE)
+	_movement_tween.set_ease(Tween.EASE_OUT if entering else Tween.EASE_IN)
+	_movement_tween.tween_property(self, "position", target, travel_duration)
+	await _movement_tween.finished
 
+func cancel() -> void:
+	_operation += 1
+	_busy = false
+	_carrying_part = false
+	_part_sprite.visible = false
+	visible = false
+	if is_instance_valid(_movement_tween) and _movement_tween.is_running():
+		var cancelled_tween := _movement_tween
+		cancelled_tween.kill()
+		cancelled_tween.finished.emit()
 
-# Desenha uma versão provisória em estilo industrial.
-# Draws a temporary industrial-style version.
 func _draw() -> void:
 	# Trilho vertical que vem de cima da tela.
 	# Vertical rail extending from above the screen.
@@ -120,19 +140,3 @@ func _draw() -> void:
 	draw_line(Vector2(-10, -8), Vector2(10, -8), U.AMBER, 3.0)
 	draw_line(Vector2(-8, -8), Vector2(-8, 10), U.LINE, 3.0)
 	draw_line(Vector2(8, -8), Vector2(8, 10), U.LINE, 3.0)
-
-	# Desenha a peça que está sendo transportada.
-	# Draws the part being carried.
-	if not _carrying_part:
-		return
-
-	if _replacement_kind == InteractionController.SlotKind.NAIL:
-		# Prego novo: haste e cabeça.
-		# New nail: shaft and head.
-		draw_line(Vector2(0, 12), Vector2(0, 21), U.MUTED, 2.0)
-		draw_line(Vector2(-5, 12), Vector2(5, 12), U.AMBER, 2.0)
-	else:
-		# Parafuso novo: cabeça circular e fenda.
-		# New screw: circular head and slot.
-		draw_circle(Vector2(0, 16), 4.0, U.MUTED, false, 2.0)
-		draw_line(Vector2(-3, 16), Vector2(3, 16), U.AMBER, 2.0)

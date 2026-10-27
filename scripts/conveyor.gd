@@ -192,3 +192,9 @@ func show_empty(index: int) -> void:
 		return
 	slot_visuals[index].empty = true
 	slot_visuals[index].queue_redraw()
+
+
+# Centro do slot em coordenadas globais, para a entrega pelo braço auxiliar.
+func get_slot_position(index: int) -> Vector2:
+	var slot := slot_visuals[index]
+	return slot.get_global_transform() * (slot.size / 2.0)

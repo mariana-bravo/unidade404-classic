@@ -13,10 +13,15 @@ const ERROR = preload("res://audio/sfx/error.ogg")
 const TIME_LOW = preload("res://audio/sfx/time_low.ogg")
 const MOTOR = preload("res://audio/sfx/screwdriver_loop.wav")
 const U = preload("res://scripts/ui/industrial_ui.gd")
+const HAMMER_ICON = preload("res://art/HUD/tool_hammer.png")
+const SCREWDRIVER_ICON = preload("res://art/HUD/tool_screwdriver.png")
+const TOOL_ICON_SHADER = preload("res://scripts/ui/tool_icon.gdshader")
 const NEUTRAL := U.MUTED
-const ACTIVE := U.UNIT
+var _tint: Color = U.UNIT
 const AMBER := U.AMBER
 
+var _hammer_icon: TextureRect
+var _screwdriver_icon: TextureRect
 var _reader: ClickReader
 var _controller: InteractionController
 var _status: String = ""
@@ -36,6 +41,10 @@ var _motor: AudioStreamPlayer
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_hammer_icon = _tool_icon(HAMMER_ICON, Vector2(232, 144))
+	_screwdriver_icon = _tool_icon(SCREWDRIVER_ICON, Vector2(264, 144))
+
 	_ui = _player("Interface", -17.0, 3)
 	_mechanical = _player("Mechanical", -10.0, 2)
 	_success = _player("Success", -14.0, 2)
@@ -46,6 +55,25 @@ func _ready() -> void:
 	stream.loop_begin = 0
 	stream.loop_end = roundi(stream.get_length() * stream.mix_rate)
 	_motor.stream = stream
+
+
+func _tool_icon(texture: Texture2D, location: Vector2) -> TextureRect:
+	var icon := TextureRect.new()
+	icon.texture = texture
+	icon.position = location
+	icon.size = Vector2(16, 16)
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var icon_material := ShaderMaterial.new()
+	icon_material.shader = TOOL_ICON_SHADER
+	icon.material = icon_material
+	add_child(icon)
+	return icon
+
+func _sync_tool_icons() -> void:
+	_hammer_icon.visible = not _stopped
+	_screwdriver_icon.visible = not _stopped
+	_hammer_icon.modulate = Color.WHITE if _tool == InteractionController.Tool.HAMMER else Color(0.5, 0.5, 0.5, 0.7)
+	_screwdriver_icon.modulate = Color.WHITE if _tool == InteractionController.Tool.SCREWDRIVER else Color(0.5, 0.5, 0.5, 0.7)
 
 func bind_input(reader: ClickReader, controller: InteractionController, run: RunManager) -> void:
 	_reader = reader
@@ -75,6 +103,7 @@ func _play(player: AudioStreamPlayer, stream: AudioStream) -> void:
 	player.play()
 
 func _process(delta: float) -> void:
+	_sync_tool_icons()
 	_press_pulse = maxf(0.0, _press_pulse - delta)
 	_flash = maxf(0.0, _flash - delta * 2.0)
 	_prepare_strength = move_toward(_prepare_strength, 1.0 if _prepared else 0.0, delta * 7.0)
@@ -82,23 +111,28 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	if not _stopped:
-		U.visor_panel(self, Rect2(14, 138, 174, 25), ACTIVE)
-		U.visor_panel(self, Rect2(216, 138, 88, 25), ACTIVE)
-		U.text(self, "ESTADO DA UNIDADE", 20, 146, 8, ACTIVE)
-		U.text(self, "FERRAMENTA", 222, 146, 8, ACTIVE)
-		U.text(self, "MARTELO", 222, 157, 8, ACTIVE if _tool == InteractionController.Tool.HAMMER else NEUTRAL)
-		U.text(self, "CHAVE", 258, 157, 8, ACTIVE if _tool == InteractionController.Tool.SCREWDRIVER else NEUTRAL)
+		U.visor_panel(self, Rect2(14, 138, 174, 25), _tint)
+		U.visor_panel(self, Rect2(216, 132, 88, 32), _tint)
+		U.text(self, "ESTADO DA UNIDADE", 20, 146, 8, _tint)
+		U.text(self, "FERRAMENTA", 222, 140, 8, _tint)
+		if _tool != InteractionController.Tool.NONE:
+			var x := 230.0 if _tool == InteractionController.Tool.HAMMER else 262.0
+			draw_rect(Rect2(x, 142, 20, 20), _tint, false, 1)
 		if _press_pulse > 0.0:
-			draw_line(Vector2(222, 160), Vector2(282, 160), U.UNIT)
+			draw_line(Vector2(222, 160), Vector2(282, 160), _tint)
 		if _status != "":
-			U.text(self, _status, 20, 157, 10, U.INK, 164)
+			U.text(self, _status, 20, 157, 10, _tint, 164)
 		elif _prepare_strength > 0.0:
 			U.text(self, "PREPARADO", 20, 157, 10, Color(AMBER, _prepare_strength))
 		if _ring_visible:
 			draw_arc(Vector2(293, 151), 7, 0, TAU, 32, U.LINE, 1)
-			draw_arc(Vector2(293, 151), 7, -PI / 2, -PI / 2 + TAU * maxf(_ratio, 0.001), 32, AMBER if _prepared else ACTIVE, 1)
+			draw_arc(Vector2(293, 151), 7, -PI / 2, -PI / 2 + TAU * maxf(_ratio, 0.001), 32, AMBER if _prepared else _tint, 1)
 	if _flash > 0.0:
 		draw_rect(Rect2(0, 0, 320, 180), Color(U.ERROR, _flash))
+
+func set_tint(color: Color) -> void:
+	_tint = color
+	queue_redraw()
 
 func show_status(message: String) -> void:
 	_status = message

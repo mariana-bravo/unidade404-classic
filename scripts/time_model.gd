@@ -66,8 +66,5 @@ static func margem(pecas_concluidas: int) -> float:
 
 ## Segundos que a barra ganha ao concluir um slot.
 static func tempo_concedido(kind: int, pecas_concluidas: int, tempo_esteira: float = 0.0) -> float:
-	var automatico := 0.0
-	if kind == SlotKind.BAD_NAIL or kind == SlotKind.RUSTY_SCREW:
-		automatico = Settings.TEMPO_SUBSTITUICAO
 	# Recompensa fixa por tipo: tentativas e hesitação não aumentam o bônus.
-	return t_min(kind) * margem(pecas_concluidas) + automatico + maxf(0.0, tempo_esteira)
+	return t_min(kind) * margem(pecas_concluidas) + maxf(0.0, tempo_esteira)

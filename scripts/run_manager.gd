@@ -27,6 +27,7 @@ var level: int = 1
 var time_left: float = BARRA_INICIAL
 var life_time: float = 0.0
 var running: bool = false
+var automation_paused: bool = false
 var training: bool = false   # calibração: a barra não desce e não mata
 var _low_emitted: bool = false
 
@@ -40,6 +41,7 @@ func start_run(is_training: bool = false) -> void:
 	life_time = 0.0
 	training = is_training
 	_low_emitted = false
+	automation_paused = false
 	running = true
 	score_changed.emit(score)
 	level_changed.emit(level)
@@ -50,6 +52,8 @@ func _process(delta: float) -> void:
 	if not running or training:
 		return
 	life_time += delta
+	if automation_paused:
+		return
 	time_left -= delta
 	if time_left <= 0.0:
 		time_left = 0.0
