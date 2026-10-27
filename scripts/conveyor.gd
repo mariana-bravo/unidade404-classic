@@ -1,22 +1,19 @@
 
 class_name Conveyor
 extends Node2D
+const U = preload("res://scripts/ui/industrial_ui.gd")
 
 # Informa que um movimento terminou.
 signal movement_finished
 
 # Posições de entrada, montagem e saída.
-const ENTRY_POSITION := Vector2(-140, 90)
-const WORK_POSITION := Vector2(160, 90)
-const EXIT_POSITION := Vector2(460, 90)
+const ENTRY_POSITION := Vector2(-140, 112)
+const WORK_POSITION := Vector2(160, 112)
+const EXIT_POSITION := Vector2(460, 112)
 
-const SLOT_WIDTH := 36.0
-const SLOT_HEIGHT := 28.0
-const SLOT_GAP := 12.0
-
-const COLOR_PENDING := Color("#3b4655")
-const COLOR_ACTIVE := Color("#a7792a")
-const COLOR_COMPLETED := Color("#28654c")
+const SLOT_WIDTH := 44.0
+const SLOT_HEIGHT := 26.0
+const SLOT_GAP := 8.0
 
 # Duração de cada movimento, em segundos.
 @export var movement_duration: float = 1.0
@@ -27,7 +24,8 @@ const COLOR_COMPLETED := Color("#28654c")
 @onready var board: Node2D = $Board
 @onready var slots_container: Node2D = $Board/Slots
 
-var slot_visuals: Array[ColorRect] = []
+var slot_visuals: Array[AssemblySlotVisual] = []
+var _belt_offset: float = 0.0
 
 var moving: bool = false
 var _movement_tween: Tween
@@ -35,6 +33,7 @@ var _movement_tween: Tween
 
 func _ready() -> void:
 	board.position = ENTRY_POSITION
+	$Board/BoardVisual.add_theme_stylebox_override("panel", U.panel_style())
 
 	if demo_mode:
 		await enter_board()
@@ -111,66 +110,34 @@ func set_slots(slot_types: Array[int]) -> void:
 	var start_x := -total_width / 2.0
 
 	for i in range(quantity):
-		var slot := ColorRect.new()
-
+		var slot := AssemblySlotVisual.new()
 		slot.name = "Slot" + str(i + 1)
 		slot.size = Vector2(SLOT_WIDTH, SLOT_HEIGHT)
-
-		slot.position = Vector2(
-			start_x + i * (SLOT_WIDTH + SLOT_GAP),
-			-SLOT_HEIGHT / 2.0
-		)
-
-		slot.color = COLOR_PENDING
+		slot.position = Vector2(start_x + i * (SLOT_WIDTH + SLOT_GAP), -SLOT_HEIGHT / 2.0)
+		slot.kind = slot_types[i]
 		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
 		slots_container.add_child(slot)
 		slot_visuals.append(slot)
-
-		# Adiciona o texto indicando o tipo do slot.
-		var label := Label.new()
-
-		label.text = _get_slot_name(slot_types[i])
-		label.position = Vector2.ZERO
-		label.size = Vector2(SLOT_WIDTH, SLOT_HEIGHT)
-
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-		slot.add_child(label)
 
 	# Destaca o primeiro slot.
 	update_slot_progress(0)
 
 
-func _get_slot_name(slot_kind: int) -> String:
-	match slot_kind:
-		InteractionController.SlotKind.NAIL:
-			return "PR"
-
-		InteractionController.SlotKind.SCREW:
-			return "PA"
-
-		InteractionController.SlotKind.BAD_NAIL:
-			return "P.T."
-
-		InteractionController.SlotKind.RUSTY_SCREW:
-			return "P.E."
-
-	return "?"
-
-
 func update_slot_progress(completed_count: int) -> void:
 	for i in range(slot_visuals.size()):
-		if i < completed_count:
-			slot_visuals[i].color = COLOR_COMPLETED
+		slot_visuals[i].set_state(i < completed_count, i == completed_count)
 
-		elif i == completed_count:
-			slot_visuals[i].color = COLOR_ACTIVE
+func _process(delta: float) -> void:
+	if moving:
+		_belt_offset = fmod(_belt_offset + delta * 32, 16)
+		queue_redraw()
 
-		else:
-			slot_visuals[i].color = COLOR_PENDING
+func _draw() -> void:
+	for y in [84, 137]:
+		draw_line(Vector2(12, y), Vector2(308, y), U.LINE)
+		for i in range(19):
+			var x := 12 + posmod(i * 16 + int(_belt_offset), 296)
+			draw_rect(Rect2(x, y + 2, 6, 2), U.LINE)
 
 
 # Interrompe o movimento no game over e libera quem aguardava a animação.
@@ -185,6 +152,6 @@ func pulse_slot(index: int) -> void:
 	if index < 0 or index >= slot_visuals.size():
 		return
 	var slot := slot_visuals[index]
-	slot.modulate = Color(1.4, 2.0, 1.4)
+	slot.modulate = Color(1.3, 1.3, 1.3)
 	var pulse := slot.create_tween()
 	pulse.tween_property(slot, "modulate", Color.WHITE, 0.18)

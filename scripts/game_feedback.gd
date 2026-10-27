@@ -12,12 +12,14 @@ const BOARD_COMPLETE = preload("res://audio/sfx/board_complete.ogg")
 const ERROR = preload("res://audio/sfx/error.ogg")
 const TIME_LOW = preload("res://audio/sfx/time_low.ogg")
 const MOTOR = preload("res://audio/sfx/screwdriver_loop.wav")
-const NEUTRAL := Color(0.5, 0.6, 0.65)
-const ACTIVE := Color(0.65, 1.0, 0.8)
-const AMBER := Color(1.0, 0.72, 0.15)
+const U = preload("res://scripts/ui/industrial_ui.gd")
+const NEUTRAL := U.MUTED
+const ACTIVE := U.UNIT
+const AMBER := U.AMBER
 
 var _reader: ClickReader
 var _controller: InteractionController
+var _status: String = ""
 var _tool: int = InteractionController.Tool.NONE
 var _prepared: bool = false
 var _prepare_strength: float = 0.0
@@ -79,27 +81,32 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var font := ThemeDB.fallback_font
-	var origin := Vector2(202, 126)
-	for i in range(2):
-		var selected := _tool == i + 1
-		var color := ACTIVE if selected else NEUTRAL
-		var rect := Rect2(origin + Vector2(i * 53, 0), Vector2(50, 13))
-		draw_rect(rect, Color(0.08, 0.14, 0.16))
-		draw_rect(rect, color, false, 1.0)
-		draw_string(font, rect.position + Vector2(3, 9), "MARTELO" if i == 0 else "CHAVE", HORIZONTAL_ALIGNMENT_LEFT, -1, 7, color)
-	if _press_pulse > 0.0:
-		draw_rect(Rect2(origin - Vector2.ONE, Vector2(105, 15)), Color(0.6, 0.9, 1.0, _press_pulse / 0.14), false)
-	if _prepare_strength > 0.0:
-		draw_string(font, origin + Vector2(0, 29), "PREPARADO", HORIZONTAL_ALIGNMENT_LEFT, -1, 7, Color(AMBER, _prepare_strength))
-	if _ring_visible:
-		var center := origin + Vector2(88, 32)
-		draw_arc(center, 12, 0, TAU, 40, Color(0.2, 0.28, 0.3), 2.0)
-		if _ratio > 0.0:
-			draw_arc(center, 12, -PI / 2, -PI / 2 + TAU * _ratio, 40, AMBER if _prepared else ACTIVE, 2.0)
-		draw_string(font, center + Vector2(-7, 3), "%d" % roundi(_ratio * 100), HORIZONTAL_ALIGNMENT_LEFT, -1, 7, ACTIVE)
+	if not _stopped:
+		if _tool == InteractionController.Tool.NONE:
+			U.text(self, "1 MARTELO / 2 CHAVE", 192, 153, 10, NEUTRAL)
+		else:
+			draw_rect(Rect2(235, 145, 45, 13), U.PANEL)
+			draw_rect(Rect2(235, 145, 45, 13), ACTIVE, false)
+			U.text(self, "MARTELO" if _tool == InteractionController.Tool.HAMMER else "CHAVE", 238, 154, 10, ACTIVE)
+		if _press_pulse > 0.0:
+			draw_line(Vector2(192, 158), Vector2(300, 158), U.UNIT)
+		if _status != "":
+			U.text(self, _status, 20, 153, 10, U.MUTED, 164)
+		elif _prepare_strength > 0.0:
+			U.text(self, "PREPARADO", 20, 153, 10, Color(AMBER, _prepare_strength))
+		if _ring_visible:
+			draw_arc(Vector2(292, 150), 8, 0, TAU, 32, U.LINE, 2)
+			draw_arc(Vector2(292, 150), 8, -PI / 2, -PI / 2 + TAU * maxf(_ratio, 0.001), 32, AMBER if _prepared else ACTIVE, 2)
 	if _flash > 0.0:
-		draw_rect(Rect2(0, 0, 320, 180), Color(1.0, 0.08, 0.04, _flash))
+		draw_rect(Rect2(0, 0, 320, 180), Color(U.ERROR, _flash))
+
+func show_status(message: String) -> void:
+	_status = message
+	queue_redraw()
+
+func sync_phase() -> void:
+	if _controller != null:
+		_sync_phase()
 
 func _on_press() -> void:
 	if _stopped:
@@ -136,6 +143,7 @@ func _sync_phase() -> void:
 	if _stopped:
 		return
 	_tool = _controller.tool
+	_status = "SELECIONE A FERRAMENTA" if _controller.phase == InteractionController.Phase.SELECT_TOOL else ("SUBSTITUINDO..." if _controller.phase == InteractionController.Phase.WAIT_REPLACEMENT else "")
 	var was_prepared := _prepared
 	_prepared = _controller.phase == InteractionController.Phase.UNSCREW_HOLD
 	if _prepared and not was_prepared:

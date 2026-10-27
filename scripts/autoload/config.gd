@@ -15,4 +15,4 @@ const GAME_OVER_ESPERA: float = 5.0
 const TEMPO_SUBSTITUICAO: float = 1.0
 const BARRA_INICIAL: float = 8.0
 const BARRA_MAX: float = 10.0
-const PALETA: Array[Color] = [Color("8cc7ff"), Color("a4df9b"), Color("eac28f"), Color("c6a2e8"), Color("95dddd"), Color("e2a5c6")]
+const PALETA: Array[Color] = [Color("92dcba"), Color("849be4"), Color("f4d29c"), Color("bc4a9b"), Color("20d6c7"), Color("b3b9d1")]

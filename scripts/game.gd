@@ -9,9 +9,6 @@ extends Node2D
 @onready var run_manager: RunManager = $RunManager
 
 # Referências aos elementos da interface.
-@onready var tool_label: Label = $ToolLabel
-@onready var phase_label: Label = $PhaseLabel
-@onready var feedback_label: Label = $FeedbackLabel
 @onready var input_feedback: GameFeedback = $InputFeedback
 @onready var shutdown_fx: ShutdownFx = $ShutdownFx
 @onready var wall_led: ColorRect = $WallLed
@@ -101,51 +98,24 @@ func start_slot() -> void:
 
 	controller.set_slot(current_board[current_slot])
 	conveyor.update_slot_progress(current_slot)
-	feedback_label.text = "SELECIONE A FERRAMENTA"
+	input_feedback.show_status( "SELECIONE A FERRAMENTA")
 
 	update_interface()
 
 # Atualiza os textos da tela.
 func update_interface() -> void:
-	match controller.tool:
-		InteractionController.Tool.NONE:
-			tool_label.text = "FERRAMENTA: NENHUMA"
-
-		InteractionController.Tool.HAMMER:
-			tool_label.text = "FERRAMENTA: MARTELO"
-
-		InteractionController.Tool.SCREWDRIVER:
-			tool_label.text = "FERRAMENTA: CHAVE"
-
-	match controller.phase:
-		InteractionController.Phase.SELECT_TOOL:
-			phase_label.text = "FASE: SELECIONAR"
-
-		InteractionController.Phase.ACT:
-			phase_label.text = "FASE: EXECUTAR ACAO"
-
-		InteractionController.Phase.UNSCREW_HOLD:
-			phase_label.text = "FASE: SEGURE PARA REMOVER"
-
-		InteractionController.Phase.WAIT_REPLACEMENT:
-			phase_label.text = "FASE: SUBSTITUINDO"
-
-		InteractionController.Phase.ACT_NO_SELECT:
-			phase_label.text = "FASE: INSTALAR NOVA PECA"
-
-		InteractionController.Phase.DONE:
-			phase_label.text = "FASE: CONCLUIDO"
+	input_feedback.sync_phase()
 
 
 # O jogador escolheu a ferramenta certa.
 func _on_tool_selected(_tool: int) -> void:
-	feedback_label.text = "FERRAMENTA CORRETA!"
+	input_feedback.show_status( "FERRAMENTA CORRETA!")
 	update_interface()
 
 
 # Uma etapa da ação foi realizada.
 func _on_step_completed() -> void:
-	feedback_label.text = "ACAO CORRETA!"
+	input_feedback.show_status( "ACAO CORRETA!")
 	update_interface()
 
 
@@ -184,7 +154,7 @@ func _on_slot_completed() -> void:
 	board_transitioning = true
 	click_reader.set_enabled(false)
 
-	feedback_label.text = "PECA CONCLUIDA!"
+	input_feedback.show_status( "PECA CONCLUIDA!")
 
 	# A peça pronta sai.
 	await conveyor.exit_board()
@@ -210,7 +180,7 @@ func _on_replacement_requested() -> void:
 	replacing = true
 	click_reader.set_enabled(false)
 
-	feedback_label.text = "AGUARDE A NOVA PECA..."
+	input_feedback.show_status( "AGUARDE A NOVA PECA...")
 	update_interface()
 
 	await get_tree().create_timer(Config.TEMPO_SUBSTITUICAO).timeout
@@ -221,7 +191,7 @@ func _on_replacement_requested() -> void:
 	controller.replacement_finished()
 	replacing = false
 
-	feedback_label.text = "NOVA PECA INSTALADA!"
+	input_feedback.show_status( "NOVA PECA INSTALADA!")
 	update_interface()
 
 	click_reader.set_enabled(true)

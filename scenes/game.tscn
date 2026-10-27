@@ -20,14 +20,14 @@ script = ExtResource("1_lnu2h")
 offset_right = 320.0
 offset_bottom = 180.0
 mouse_filter = 2
-color = Color(0.09019608, 0.105882354, 0.14117648, 1)
+color = Color(0.023529412, 0.023529412, 0.03137255, 1)
 
 [node name="WallLed" type="ColorRect" parent="."]
 offset_left = 284.0
 offset_top = 43.0
 offset_right = 290.0
 offset_bottom = 49.0
-color = Color(0.2, 0.02, 0.02, 1)
+color = Color(0.23137255, 0.09019608, 0.14509804, 1)
 mouse_filter = 2
 
 [node name="Conveyor" parent="." unique_id=1639852914 instance=ExtResource("2_lbhrr")]
@@ -46,33 +46,6 @@ script = ExtResource("5_iywne")
 [node name="ClickReader" type="Node" parent="." unique_id=1409149062]
 script = ExtResource("1_yqjtg")
 metadata/_custom_type_script = "uid://cslmq2arup1fp"
-
-[node name="ToolLabel" type="Label" parent="." unique_id=823941007]
-offset_left = 25.0
-offset_top = 130.0
-offset_right = 222.0
-offset_bottom = 153.00008
-mouse_filter = 2
-scale = Vector2(0.5, 0.5)
-text = "FERRAMENTA: NENHUMA"
-
-[node name="PhaseLabel" type="Label" parent="." unique_id=506187177]
-offset_left = 25.0
-offset_top = 140.0
-offset_right = 167.0
-offset_bottom = 163.00006
-mouse_filter = 2
-scale = Vector2(0.5, 0.5)
-text = "FASE: SELECIONAR"
-
-[node name="FeedbackLabel" type="Label" parent="." unique_id=1664977685]
-offset_left = 25.0
-offset_top = 150.0
-offset_right = 153.0
-offset_bottom = 173.0
-mouse_filter = 2
-scale = Vector2(0.5, 0.5)
-text = "AGUARDANDO..."
 
 [node name="VisorHud" parent="." instance=ExtResource("7_hud")]
 
