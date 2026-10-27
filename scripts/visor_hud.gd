@@ -11,7 +11,8 @@ const COR_TEXTO := Color(0.80, 1.00, 0.85)
 const COR_BARRA := Color(0.80, 1.00, 0.85)
 const COR_BARRA_BAIXA := Color(1.00, 0.72, 0.15)   # âmbar: o vermelho é reservado ao erro
 const COR_FUNDO_BARRA := Color(0.08, 0.10, 0.10)
-const LIMIAR_BAIXO := 0.25
+const Settings = preload("res://scripts/autoload/config.gd")
+const LIMIAR_BAIXO := Settings.LIMIAR_TEMPO_BAIXO
 const BARRA_X := 120.0
 const BARRA_Y := 14.0
 const BARRA_LARGURA := 80.0
@@ -20,7 +21,7 @@ const LARGURA_TELA := 320.0
 const ALTURA_TELA := 180.0
 const ESPESSURA_MOLDURA := 3.0
 
-@export var max_time: float = 10.0   # igual ao RunManager.BARRA_MAX
+@export var max_time: float = Settings.BARRA_MAX   # igual ao RunManager.BARRA_MAX
 
 var _frame: Control
 var _name_label: Label
@@ -46,7 +47,7 @@ func _ready() -> void:
 	_score_label = _make_label("", Vector2(204, 4), Vector2(108, 10), HORIZONTAL_ALIGNMENT_RIGHT)
 	_best_label = _make_label("", Vector2(204, 14), Vector2(108, 10), HORIZONTAL_ALIGNMENT_RIGHT)
 	set_score(0)
-	set_best(0)
+	set_best()
 	set_level(1)
 	set_time(max_time)
 	set_tint(Color.WHITE)
@@ -83,12 +84,18 @@ func set_level(level: int) -> void:
 
 # ---------------- Extras (identidade e recorde) ----------------
 
-func set_best(points: int) -> void:
-	_best_label.text = "RECORDE %04d" % points
+func set_best(points: int = -1) -> void:
+	_best_label.text = "RECORDE ---" if points < 0 else "RECORDE %04d" % points
 
 
 func set_robot(robot_name: String, serial: int) -> void:
 	_name_label.text = robot_name
+	# Nomes longos devem caber no canto sem invadir a barra.
+	var font := _name_label.get_theme_font("font")
+	var font_size := 8
+	while font_size > 5 and font.get_string_size(robot_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > _name_label.size.x:
+		font_size -= 1
+	_name_label.add_theme_font_size_override("font_size", font_size)
 	_serial_label.text = "Nº %03d" % serial
 
 

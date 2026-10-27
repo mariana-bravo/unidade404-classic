@@ -4,14 +4,16 @@ extends RefCounted
 ## Só tem funções puras: não é nó, não tem cena e não guarda estado.
 ## Por isso dá para testar só com print.
 
+const Settings = preload("res://scripts/autoload/config.gd")
+
 enum SlotKind { NAIL, SCREW, BAD_NAIL, RUSTY_SCREW }
 
 # --- Constantes de leitura de clique (GDD seção 3.4) ---
 const TOQUE := 0.10
 const INTERVALO_DUPLO := 0.12
-const JANELA_DUPLO := 0.28
-const TEMPO_APARAFUSAR := 0.90
-const TRAVA_POS_ACAO := 0.15
+const JANELA_DUPLO := Settings.JANELA_DUPLO
+const TEMPO_APARAFUSAR := Settings.TEMPO_APARAFUSAR
+const TRAVA_POS_ACAO := Settings.TRAVA_POS_ACAO
 
 # --- Tempos de reação humana (GDD seção 6.2). Validar em playtest. ---
 const REACAO_ESCOLHA := 0.45
@@ -63,5 +65,9 @@ static func margem(pecas_concluidas: int) -> float:
 
 
 ## Segundos que a barra ganha ao concluir um slot.
-static func tempo_concedido(kind: int, pecas_concluidas: int) -> float:
-	return t_min(kind) * margem(pecas_concluidas)
+static func tempo_concedido(kind: int, pecas_concluidas: int, tempo_esteira: float = 0.0) -> float:
+	var automatico := 0.0
+	if kind == SlotKind.BAD_NAIL or kind == SlotKind.RUSTY_SCREW:
+		automatico = Settings.TEMPO_SUBSTITUICAO
+	# Recompensa fixa por tipo: tentativas e hesitação não aumentam o bônus.
+	return t_min(kind) * margem(pecas_concluidas) + automatico + maxf(0.0, tempo_esteira)

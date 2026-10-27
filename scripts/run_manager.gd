@@ -14,9 +14,10 @@ signal run_finished(reason: String, score: int, life_time: float)
 const MOTIVO_ACAO_INCORRETA := "acao_incorreta"
 const MOTIVO_TEMPO_ESGOTADO := "tempo_esgotado"
 
-const BARRA_INICIAL := 8.0
-const BARRA_MAX := 10.0
-const LIMIAR_TEMPO_BAIXO := 0.25   # abaixo de 25% da barra dispara time_low
+const Settings = preload("res://scripts/autoload/config.gd")
+const BARRA_INICIAL := Settings.BARRA_INICIAL
+const BARRA_MAX := Settings.BARRA_MAX
+const LIMIAR_TEMPO_BAIXO := Settings.LIMIAR_TEMPO_BAIXO   # abaixo de 25% da barra dispara time_low
 const PONTOS_POR_SLOT := 10
 const PONTOS_POR_PECA := 50
 
@@ -26,7 +27,6 @@ var level: int = 1
 var time_left: float = BARRA_INICIAL
 var life_time: float = 0.0
 var running: bool = false
-var paused: bool = false
 var training: bool = false   # calibração: a barra não desce e não mata
 var _low_emitted: bool = false
 
@@ -38,7 +38,6 @@ func start_run(is_training: bool = false) -> void:
 	level = 1
 	time_left = BARRA_INICIAL
 	life_time = 0.0
-	paused = false
 	training = is_training
 	_low_emitted = false
 	running = true
@@ -48,7 +47,7 @@ func start_run(is_training: bool = false) -> void:
 
 
 func _process(delta: float) -> void:
-	if not running or paused or training:
+	if not running or training:
 		return
 	life_time += delta
 	time_left -= delta
@@ -63,11 +62,11 @@ func _process(delta: float) -> void:
 
 
 ## Chamar quando o jogador conclui um slot. `kind` é um TimeModel.SlotKind.
-func on_slot_completed(kind: int) -> void:
+func on_slot_completed(kind: int, tempo_esteira: float = 0.0) -> void:
 	if not running:
 		return
 	add_points(PONTOS_POR_SLOT)
-	var bonus := TimeModel.tempo_concedido(kind, pieces_done)
+	var bonus := TimeModel.tempo_concedido(kind, pieces_done, tempo_esteira)
 	time_left = minf(time_left + bonus, BARRA_MAX)
 	time_changed.emit(time_left)
 	_check_low_time()
@@ -90,11 +89,6 @@ func add_points(amount: int) -> void:
 		return
 	score += amount
 	score_changed.emit(score)
-
-
-## Pausa a barra durante automações (braço do outro robô, esteira, desligamento).
-func set_paused(value: bool) -> void:
-	paused = value
 
 
 ## Encerra a vida (erro do jogador ou tempo esgotado). Só funciona uma vez.
