@@ -30,6 +30,14 @@ offset_bottom = 49.0
 color = Color(0.23137255, 0.09019608, 0.14509804, 1)
 mouse_filter = 2
 
+[node name="WallLed" type="ColorRect" parent="."]
+offset_left = 284.0
+offset_top = 43.0
+offset_right = 290.0
+offset_bottom = 49.0
+color = Color(0.2, 0.02, 0.02, 1)
+mouse_filter = 2
+
 [node name="Conveyor" parent="." unique_id=1639852914 instance=ExtResource("2_lbhrr")]
 demo_mode = false
 
