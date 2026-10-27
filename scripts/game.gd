@@ -28,7 +28,8 @@ func _ready() -> void:
 		GameState.new_robot()
 	GameState.robot_changed.connect(_on_robot_changed)
 	_on_robot_changed(GameState.robot_name, GameState.robot_gender, GameState.serial, GameState.color_index)
-	hud.set_best()
+	hud.set_best(ScoreboardData.get_best_score())
+	ScoreboardData.changed.connect(_on_scoreboard_changed)
 	# O jogo utiliza reconhecimento de duplo clique.
 	click_reader.set_enabled(false)
 	click_reader.mode = ClickReader.Mode.WINDOWED
@@ -235,6 +236,9 @@ func _on_hold() -> void:
 	controller.gesture_hold()
 
 
+func _on_scoreboard_changed() -> void:
+	hud.set_best(ScoreboardData.get_best_score())
+
 func _exit_tree() -> void:
 	Input.mouse_mode = _previous_mouse_mode
 
@@ -259,7 +263,10 @@ func _on_run_finished(
 	click_reader.set_enabled(false)
 
 	conveyor.stop_movement()
-	feedback_label.text = "GAME OVER!"
+	var ranked := false
+	if not run_manager.training:
+		ranked = ScoreboardData.submit_run(GameState.robot_name, final_score, total_life_time)
+	feedback_label.text = "ENTROU NO PLACAR!" if ranked else "GAME OVER!"
 
 	# Informações de depuração.
 	print("================================")
