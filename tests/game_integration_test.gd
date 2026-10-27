@@ -38,6 +38,9 @@ func _double() -> void:
 	_tap()
 
 func _run() -> void:
+	# Arquivo exclusivo: testes não modificam o placar do jogador.
+	ScoreboardData.save_path = "user://scoreboard_test_%s_%d.dat" % [name, Time.get_ticks_usec()]
+	ScoreboardData.load_scores()
 	var previous_mode := Input.mouse_mode
 	game = preload("res://scenes/game.tscn").instantiate()
 	add_child(game)
@@ -58,7 +61,7 @@ func _run() -> void:
 	_check(game.hud._name_label.text == GameState.robot_name, "HUD recebe nome")
 	_check(game.hud._serial_label.text == "Nº %03d" % GameState.serial, "HUD recebe serie")
 	_check(game.hud._frame.modulate == Config.PALETA[GameState.color_index], "HUD recebe cor")
-	_check(game.hud._best_label.text == "RECORDE ---", "Recorde ainda indisponivel")
+	_check(game.hud._best_label.text == "RECORDE 0000", "Recorde inicial sem entradas")
 	if DisplayServer.get_name() != "headless":
 		_check(Input.mouse_mode == Input.MOUSE_MODE_HIDDEN, "Cursor oculto")
 
@@ -120,6 +123,12 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("res://tests/hud_preview.png")
 	game.run_manager.finish_run(RunManager.MOTIVO_TEMPO_ESGOTADO)
+	_check(ScoreboardData.get_entries().size() == 1 and ScoreboardData.get_best_score() == game.run_manager.score, "Fim da partida registra placar")
+	_check(game.hud._best_label.text == "RECORDE %04d" % game.run_manager.score, "Novo recorde atualiza HUD")
+	game.run_manager.finish_run(RunManager.MOTIVO_TEMPO_ESGOTADO)
+	_check(ScoreboardData.get_entries().size() == 1, "Vida registrada uma unica vez")
+	ScoreboardData.load_scores()
+	_check(ScoreboardData.get_best_score() == game.run_manager.score, "Resultado persiste apos recarga")
 	_button(true)
 	_tick(1.0)
 	_button(false)
@@ -127,4 +136,7 @@ func _run() -> void:
 	game.free()
 	_check(Input.mouse_mode == previous_mode, "Cursor restaurado ao sair")
 	print("GAME INTEGRATION: %d checks, %d failures" % [checks, failures])
+	for suffix in ["", ".bak", ".tmp"]:
+		if FileAccess.file_exists(ScoreboardData.save_path + suffix):
+			DirAccess.remove_absolute(ScoreboardData.save_path + suffix)
 	get_tree().quit(0 if failures == 0 else 1)

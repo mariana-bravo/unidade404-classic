@@ -18,6 +18,9 @@ func _new_game() -> Node2D:
 	return game
 
 func _run() -> void:
+	# Arquivo exclusivo: testes não modificam o placar do jogador.
+	ScoreboardData.save_path = "user://scoreboard_test_%s_%d.dat" % [name, Time.get_ticks_usec()]
+	ScoreboardData.load_scores()
 	var expected := [3.40, 4.55, 5.825, 9.375]
 	for kind in range(4):
 		_check(is_equal_approx(TimeModel.tempo_concedido(kind, 0), expected[kind]), "Recompensa nivel 1 tipo %d" % kind)
@@ -81,4 +84,7 @@ func _run() -> void:
 	_check(is_zero_approx(rm.time_left) and rm.score == 10, "Conclusao tardia nao revive nem pontua")
 	rm.free()
 	print("CONTINUOUS TIME: %d checks, %d failures" % [checks, failures])
+	for suffix in ["", ".bak", ".tmp"]:
+		if FileAccess.file_exists(ScoreboardData.save_path + suffix):
+			DirAccess.remove_absolute(ScoreboardData.save_path + suffix)
 	get_tree().quit(0 if failures == 0 else 1)

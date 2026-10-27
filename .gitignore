@@ -46,3 +46,8 @@ exports/
 # Configurações locais dos editores
 .vscode/
 .idea/
+
+# Placar local (inclui backup e gravação temporária)
+scoreboard.dat
+scoreboard.dat.bak
+scoreboard.dat.tmp
