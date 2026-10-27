@@ -1,16 +1,18 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dryh62yt0pexd"]
 
-[ext_resource type="Script" path="res://scripts/menu.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://yclrqkysiyv3" path="res://scripts/menu.gd" id="1_script"]
 
-[node name="Menu" type="Control"]
+[node name="Menu" type="Control" unique_id=1011266101]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_script")
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="Label" parent="." unique_id=1725420295]
 layout_mode = 0
 offset_left = 38.0
 offset_top = 16.0
@@ -20,7 +22,7 @@ theme_override_font_sizes/font_size = 22
 text = "UNIDADE 404"
 autowrap_mode = 3
 
-[node name="Subtitle" type="Label" parent="."]
+[node name="Subtitle" type="Label" parent="." unique_id=297345881]
 layout_mode = 0
 offset_left = 42.0
 offset_top = 45.0
@@ -30,17 +32,19 @@ theme_override_font_sizes/font_size = 11
 text = "FUTURO NÃO ENCONTRADO"
 autowrap_mode = 3
 
-[node name="MenuLabel" type="Label" parent="."]
+[node name="MenuLabel" type="Label" parent="." unique_id=1405356318]
 layout_mode = 0
 offset_left = 116.0
 offset_top = 76.0
 offset_right = 296.0
 offset_bottom = 151.0
 theme_override_font_sizes/font_size = 14
-text = "> JOGAR\n  PLACAR\n  SAIR"
+text = "> JOGAR
+  PLACAR
+  SAIR"
 autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="."]
+[node name="Hint" type="Label" parent="." unique_id=613814639]
 layout_mode = 0
 offset_left = 30.0
 offset_top = 160.0
