@@ -35,7 +35,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	else:
 		page += 1
 		if page == pages.size():
-			get_tree().change_scene_to_file("res://scenes/input_test.tscn")
+			get_tree().change_scene_to_file("res://scenes/calibration.tscn")
 		else:
 			_show_page()
 

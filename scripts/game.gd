@@ -3,6 +3,7 @@ extends Node2D
 
 # Referências aos nós da cena.
 @onready var conveyor: Conveyor = $Conveyor
+@onready var helper_arm = $HelperArm
 @onready var click_reader: ClickReader = $ClickReader
 @onready var controller: InteractionController = $InteractionController
 @onready var board_generator: BoardGenerator = $BoardGenerator
@@ -51,6 +52,7 @@ func _ready() -> void:
 	controller.step_completed.connect(_on_step_completed)
 	controller.slot_completed.connect(_on_slot_completed)
 	controller.replacement_requested.connect(_on_replacement_requested)
+	helper_arm.part_placed.connect(_on_replacement_placed)
 	controller.wrong_action.connect(_on_wrong_action)
 	controller.phase_changed.connect(update_interface)
 
@@ -95,6 +97,7 @@ func generate_new_board() -> void:
 # Inicia o slot atual.
 func start_slot() -> void:
 	replacing = false
+	run_manager.automation_paused = false
 	click_reader.reset()
 
 	controller.set_slot(current_board[current_slot])
@@ -179,25 +182,30 @@ func _on_slot_completed() -> void:
 # Um slot defeituoso precisa de outra peça.
 func _on_replacement_requested() -> void:
 	replacing = true
+	run_manager.automation_paused = true
 	conveyor.show_empty(current_slot)
 	click_reader.set_enabled(false)
 
 	input_feedback.show_status( "AGUARDE A NOVA PECA...")
 	update_interface()
 
-	await get_tree().create_timer(Config.TEMPO_SUBSTITUICAO).timeout
+	await helper_arm.replace_part(current_board[current_slot], conveyor.get_slot_position(current_slot))
 
 	if not run_manager.running:
 		return
 
-	conveyor.show_replacement(current_slot)
 	controller.replacement_finished()
 	replacing = false
+	run_manager.automation_paused = false
 
 	input_feedback.show_status( "NOVA PECA INSTALADA!")
 	update_interface()
 
 	click_reader.set_enabled(true)
+
+func _on_replacement_placed() -> void:
+	if replacing and run_manager.running and not _ending:
+		conveyor.show_replacement(current_slot)
 
 # O jogador realizou uma ação incorreta.
 func _on_wrong_action(reason: String) -> void:
@@ -234,6 +242,7 @@ func _exit_tree() -> void:
 func _on_robot_changed(robot_name: String, _gender: String, serial: int, color_index: int) -> void:
 	hud.set_robot(robot_name, serial)
 	hud.set_tint(Config.PALETA[color_index])
+	input_feedback.set_tint(Config.PALETA[color_index])
 
 
 # Chamado quando o tempo acaba.
@@ -254,6 +263,7 @@ func _on_run_finished(
 	click_reader.set_enabled(false)
 	controller.set_process(false)
 	conveyor.stop_movement()
+	helper_arm.cancel()
 	var previous_best := ScoreboardData.get_best_score()
 	var ranked := false
 	if not run_manager.training:

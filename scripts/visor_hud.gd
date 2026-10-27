@@ -27,7 +27,7 @@ func _ready() -> void:
 	_panel_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel_canvas.draw.connect(_draw_panels)
 	add_child(_panel_canvas)
-	_name_label = U.label(self, "---", 20, 25, 108, 10)
+	_name_label = U.label(self, "---", 20, 25, 108, 10, _panel_tint)
 	_serial_label = U.label(self, "Nº 000", 20, 38, 56, 8, U.MUTED)
 	_level_label = U.label(self, "NÍVEL 1", 78, 38, 50, 8, U.MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
 	U.label(self, "TEMPO", 141, 23, 44, 8, U.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
@@ -56,7 +56,7 @@ func set_time(seconds: float) -> void:
 	var ratio := clampf(seconds / max_time, 0.0, 1.0)
 	_low = ratio < Config.LIMIAR_TEMPO_BAIXO
 	_time_label.text = "%04.1f" % maxf(0.0, seconds)
-	_time_label.add_theme_color_override("font_color", U.AMBER if _low else U.INK)
+	_time_label.add_theme_color_override("font_color", U.AMBER if _low else _panel_tint)
 	_bar_fill.size.x = 44 * ratio
 	_bar_fill.color = U.AMBER if _low else U.INK
 	if seconds > _last_time + 0.05:
@@ -87,7 +87,13 @@ func set_tint(color: Color) -> void:
 	_visor_frame.queue_redraw()
 	_panel_tint = color
 	_panel_canvas.queue_redraw()
-	_name_label.add_theme_color_override("font_color", U.INK)
+	# Dados e títulos acompanham a cor da unidade; secundários ficam mais discretos.
+	for child in get_children():
+		if child is Label:
+			child.add_theme_color_override("font_color", color)
+	for label in [_serial_label, _level_label, _best_label]:
+		label.add_theme_color_override("font_color", Color(color, 0.75))
+	_time_label.add_theme_color_override("font_color", U.AMBER if _low else color)
 
 func _pulse_bar() -> void:
 	if _pulse_tween != null and _pulse_tween.is_valid():
