@@ -2,16 +2,25 @@
 
 [ext_resource type="Script" uid="uid://20bbdtceec85" path="res://scripts/conveyor.gd" id="1_kqxj7"]
 
+[ext_resource type="Texture2D" path="res://art/Conveyor Belt/404_structure.png" id="2_structure"]
+
 [node name="Conveyor" type="Node2D" unique_id=1639852914]
+texture_filter = 1
 script = ExtResource("1_kqxj7")
 
 [node name="Board" type="Node2D" parent="." unique_id=237511830]
 
 [node name="BoardVisual" type="Panel" parent="Board" unique_id=439903153]
-offset_left = -117.0
-offset_top = -18.0
-offset_right = 117.0
-offset_bottom = 18.0
+offset_left = -22.0
+offset_top = -14.0
+offset_right = 22.0
+offset_bottom = 14.0
 mouse_filter = 2
 
 [node name="Slots" type="Node2D" parent="Board" unique_id=707520013]
+
+[node name="Structure" type="Sprite2D" parent="."]
+z_index = 2
+texture_filter = 1
+texture = ExtResource("2_structure")
+centered = false

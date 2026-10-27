@@ -82,6 +82,7 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	if not _stopped:
+		draw_rect(Rect2(16, 142, 288, 18), Color(U.BG, 0.88))
 		if _tool == InteractionController.Tool.NONE:
 			U.text(self, "1 MARTELO / 2 CHAVE", 192, 153, 10, NEUTRAL)
 		else:

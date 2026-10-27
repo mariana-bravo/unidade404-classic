@@ -84,6 +84,7 @@ func generate_new_board() -> void:
 	current_board = board_generator.generate_board(run_manager.level)
 	current_slot = 0
 	conveyor.set_slots(current_board)
+	hud.set_station_width(conveyor.get_board_width())
 	print(
 		"Nível: ", run_manager.level,
 		" | Peças concluídas: ", run_manager.pieces_done,
@@ -188,6 +189,7 @@ func _on_replacement_requested() -> void:
 	if not run_manager.running:
 		return
 
+	conveyor.show_replacement(current_slot)
 	controller.replacement_finished()
 	replacing = false
 
