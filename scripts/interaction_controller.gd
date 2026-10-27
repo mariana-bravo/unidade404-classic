@@ -30,6 +30,10 @@ enum Phase{
 	DONE
 }
 
+const Settings = preload("res://scripts/autoload/config.gd")
+var _prepare_left: float = 0.0
+var _prepare_pressed: bool = false
+
 var kind: SlotKind = SlotKind.NAIL
 var phase:Phase = Phase.SELECT_TOOL
 var tool:Tool = Tool.NONE
@@ -38,6 +42,24 @@ func set_slot(new_kind:SlotKind) -> void:
 	kind = new_kind
 	phase = Phase.SELECT_TOOL
 	tool = Tool.NONE
+	_prepare_left = 0.0
+	_prepare_pressed = false
+
+# A janela limita o início do pressionamento, não sua duração.
+func _process(delta: float) -> void:
+	if phase != Phase.UNSCREW_HOLD or _prepare_pressed:
+		return
+	_prepare_left = maxf(0.0, _prepare_left - delta)
+	if _prepare_left <= 0.0:
+		phase = Phase.ACT
+		phase_changed.emit()
+
+func begin_press() -> void:
+	if phase == Phase.UNSCREW_HOLD:
+		_prepare_pressed = true
+
+func end_press() -> void:
+	_prepare_pressed = false
 
 func gesture_click() -> void:
 	_gesture("click")
@@ -90,6 +112,7 @@ func _gesture(gesture: String) -> void:
 			return
 
 		phase = Phase.UNSCREW_HOLD
+		_prepare_left = Settings.JANELA_CLIQUE_LONGO
 		phase_changed.emit()
 		return
 
@@ -135,3 +158,4 @@ func _gesture(gesture: String) -> void:
 func replacement_finished() -> void:
 	if phase == Phase.WAIT_REPLACEMENT:
 		phase = Phase.ACT_NO_SELECT
+		phase_changed.emit()
