@@ -1,8 +1,7 @@
 [gd_scene format=3 uid="uid://cadkcgewd6svj"]
 
 [ext_resource type="Script" uid="uid://20bbdtceec85" path="res://scripts/conveyor.gd" id="1_kqxj7"]
-
-[ext_resource type="Texture2D" path="res://art/Conveyor Belt/404_structure.png" id="2_structure"]
+[ext_resource type="Texture2D" uid="uid://d1qekgi7g4to6" path="res://art/Conveyor Belt/404_structure.png" id="2_structure"]
 
 [node name="Conveyor" type="Node2D" unique_id=1639852914]
 texture_filter = 1
@@ -19,7 +18,7 @@ mouse_filter = 2
 
 [node name="Slots" type="Node2D" parent="Board" unique_id=707520013]
 
-[node name="Structure" type="Sprite2D" parent="."]
+[node name="Structure" type="Sprite2D" parent="." unique_id=1343225771]
 z_index = 2
 texture_filter = 1
 texture = ExtResource("2_structure")
