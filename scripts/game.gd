@@ -12,6 +12,7 @@ extends Node2D
 @onready var tool_label: Label = $ToolLabel
 @onready var phase_label: Label = $PhaseLabel
 @onready var feedback_label: Label = $FeedbackLabel
+@onready var input_feedback: GameFeedback = $InputFeedback
 @onready var hud: VisorHud = $VisorHud
 var _previous_mouse_mode: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
 
@@ -50,13 +51,14 @@ func _ready() -> void:
 	controller.replacement_requested.connect(_on_replacement_requested)
 	controller.wrong_action.connect(_on_wrong_action)
 	controller.phase_changed.connect(update_interface)
-	
+
 	run_manager.time_changed.connect(hud.set_time)
 	run_manager.score_changed.connect(hud.set_score)
 	run_manager.level_changed.connect(hud.set_level)
 	run_manager.time_expired.connect(_on_time_expired)
 	run_manager.run_finished.connect(_on_run_finished)
 
+	input_feedback.bind_input(click_reader, controller, run_manager)
 	run_manager.start_run()
 
 	generate_new_board()
@@ -66,11 +68,11 @@ func _ready() -> void:
 
 	start_slot()
 	board_transitioning = false
-	
+
 	click_reader.set_enabled(true)
-	
+
 func generate_new_board() -> void:
-	
+
 	current_board = board_generator.generate_board(run_manager.level)
 	current_slot = 0
 	conveyor.set_slots(current_board)
@@ -110,7 +112,7 @@ func update_interface() -> void:
 
 		InteractionController.Phase.ACT:
 			phase_label.text = "FASE: EXECUTAR ACAO"
-			
+
 		InteractionController.Phase.UNSCREW_HOLD:
 			phase_label.text = "FASE: SEGURE PARA REMOVER"
 
@@ -142,14 +144,17 @@ func _on_step_completed() -> void:
 func _on_slot_completed() -> void:
 	if not run_manager.running:
 		return
-		
+
 	# O slot atual terminou completamente.
 	var completed_kind: int = current_board[current_slot]
-	
+
+	input_feedback.complete_slot(current_slot == current_board.size() - 1)
+	conveyor.pulse_slot(current_slot)
+
 	# Concede pontos e recupera tempo.
 	var tempo_esteira := 2.0 * conveyor.movement_duration if current_slot == current_board.size() - 1 else 0.0
 	run_manager.on_slot_completed(completed_kind, tempo_esteira)
-	
+
 	# Marca o slot concluído visualmente.
 	conveyor.update_slot_progress(current_slot + 1)
 
@@ -160,7 +165,7 @@ func _on_slot_completed() -> void:
 		start_slot()
 		click_reader.block_for(Config.TRAVA_POS_ACAO)
 		return
-		
+
 	# Todos os slots da peça foram concluídos.
 	run_manager.on_piece_completed()
 

@@ -9,6 +9,8 @@
 
 [ext_resource type="PackedScene" path="res://scenes/visor_hud.tscn" id="7_hud"]
 
+[ext_resource type="Script" path="res://scripts/game_feedback.gd" id="8_feedback"]
+
 [node name="Game" type="Node2D" unique_id=32358537]
 script = ExtResource("1_lnu2h")
 
@@ -63,3 +65,7 @@ scale = Vector2(0.5, 0.5)
 text = "AGUARDANDO..."
 
 [node name="VisorHud" parent="." instance=ExtResource("7_hud")]
+
+[node name="InputFeedback" type="Control" parent="."]
+mouse_filter = 2
+script = ExtResource("8_feedback")

@@ -4,6 +4,7 @@ const JANELA_DUPLO: float = 0.28
 const LIMIAR_SEGURAR: float = 0.30
 const TEMPO_APARAFUSAR: float = 0.90
 const JANELA_CLIQUE_LONGO: float = 0.75
+const ATRASO_ANEL: float = 0.10
 const TRAVA_POS_ACAO: float = 0.15
 const LIMIAR_TEMPO_BAIXO: float = 0.25
 const MENU_SEGURAR: float = 0.80

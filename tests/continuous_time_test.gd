@@ -87,4 +87,6 @@ func _run() -> void:
 	for suffix in ["", ".bak", ".tmp"]:
 		if FileAccess.file_exists(ScoreboardData.save_path + suffix):
 			DirAccess.remove_absolute(ScoreboardData.save_path + suffix)
+	# O servidor de áudio libera os playbacks em seu próximo ciclo.
+	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(0 if failures == 0 else 1)
