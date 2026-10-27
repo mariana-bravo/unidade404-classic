@@ -5,6 +5,8 @@ As licenças incluídas nos packs Kenney estão em `licenses/`. Seleção em 27/
 
 | Arquivo em sfx/ | Arquivo original | Autor / fonte |
 | --- | --- | --- |
+| power_down.ogg | minimize_008.ogg | Kenney — Interface Sounds |
+| boot.ogg | maximize_008.ogg | Kenney — Interface Sounds |
 | press.ogg | click_001.ogg | Kenney — Interface Sounds |
 | select_hammer.ogg | select_001.ogg | Kenney — Interface Sounds |
 | select_screwdriver.ogg | select_002.ogg | Kenney — Interface Sounds |

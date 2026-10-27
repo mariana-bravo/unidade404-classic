@@ -13,6 +13,10 @@ extends Node2D
 @onready var phase_label: Label = $PhaseLabel
 @onready var feedback_label: Label = $FeedbackLabel
 @onready var input_feedback: GameFeedback = $InputFeedback
+@onready var shutdown_fx: ShutdownFx = $ShutdownFx
+@onready var wall_led: ColorRect = $WallLed
+var _ending: bool = false
+var _leaving: bool = false
 @onready var hud: VisorHud = $VisorHud
 var _previous_mouse_mode: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
 
@@ -30,6 +34,7 @@ func _ready() -> void:
 	GameState.robot_changed.connect(_on_robot_changed)
 	_on_robot_changed(GameState.robot_name, GameState.robot_gender, GameState.serial, GameState.color_index)
 	hud.set_best(ScoreboardData.get_best_score())
+	hud.set_time(run_manager.time_left)
 	ScoreboardData.changed.connect(_on_scoreboard_changed)
 	# O jogo utiliza reconhecimento de duplo clique.
 	click_reader.set_enabled(false)
@@ -59,6 +64,12 @@ func _ready() -> void:
 	run_manager.run_finished.connect(_on_run_finished)
 
 	input_feedback.bind_input(click_reader, controller, run_manager)
+	shutdown_fx.reboot_requested.connect(_on_reboot_requested)
+	shutdown_fx.menu_requested.connect(_on_menu_requested)
+	if GameState.reboot_pending:
+		GameState.reboot_pending = false
+		shutdown_fx.begin_boot(GameState.robot_name)
+		await shutdown_fx.boot_finished
 	run_manager.start_run()
 
 	generate_new_board()
@@ -263,26 +274,33 @@ func _on_run_finished(
 	final_score: int,
 	total_life_time: float
 ) -> void:
-	# Bloqueia novas interações.
+	if _ending:
+		return
+	_ending = true
 	board_transitioning = true
 	click_reader.set_enabled(false)
-
+	controller.set_process(false)
 	conveyor.stop_movement()
+	var previous_best := ScoreboardData.get_best_score()
 	var ranked := false
 	if not run_manager.training:
 		ranked = ScoreboardData.submit_run(GameState.robot_name, final_score, total_life_time)
-	feedback_label.text = "ENTROU NO PLACAR!" if ranked else "GAME OVER!"
+	shutdown_fx.begin({
+		"reason": reason, "name": GameState.robot_name, "serial": GameState.serial,
+		"score": final_score, "life_seconds": total_life_time,
+		"ranked": ranked, "new_best": ranked and final_score > previous_best
+	}, wall_led)
 
-	# Informações de depuração.
-	print("================================")
-	print("[DEBUG] GAME OVER")
-	print("[DEBUG] Motivo: ", reason)
-	print("[DEBUG] Pontuacao: ", final_score)
-	print("[DEBUG] Tempo de vida: %.2fs" % total_life_time)
-	print("================================")
+func _on_reboot_requested() -> void:
+	if _leaving:
+		return
+	_leaving = true
+	GameState.new_robot()
+	GameState.reboot_pending = true
+	get_tree().change_scene_to_file("res://scenes/game.tscn")
 
-	# Mostra a mensagem antes de retornar ao menu.
-	await get_tree().create_timer(2.0).timeout
-
-	# Retorna ao menu principal.
+func _on_menu_requested() -> void:
+	if _leaving:
+		return
+	_leaving = true
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
