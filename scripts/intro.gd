@@ -1,4 +1,5 @@
 extends Control
+const U = preload("res://scripts/ui/industrial_ui.gd")
 
 var pages: Array[String] = []
 var page: int = 0
@@ -6,7 +7,16 @@ var visible_chars: float = 0.0
 const CHARS_PER_SECOND: float = 28.0
 @onready var text_label: Label = $Story
 
+func _draw() -> void:
+	draw_rect(Rect2(0, 0, 320, 180), U.BG)
+
 func _ready() -> void:
+	text_label.add_theme_font_override("font", U.FONT)
+	text_label.add_theme_font_size_override("font_size", 20)
+	text_label.add_theme_color_override("font_color", U.INK)
+	$Hint.add_theme_font_override("font", U.FONT)
+	$Hint.add_theme_font_size_override("font_size", 10)
+	$Hint.add_theme_color_override("font_color", U.MUTED)
 	pages = ["A FÁBRICA NUNCA PARA.", "Humanos erram. Eles têm justificativas.", "Robôs não têm.", "UNIDADE 404: %s. ATIVADA. NÃO ERRE. NÃO DEMORE." % GameState.robot_name]
 	_show_page()
 
