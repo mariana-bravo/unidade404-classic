@@ -179,6 +179,7 @@ func _on_slot_completed() -> void:
 # Um slot defeituoso precisa de outra peça.
 func _on_replacement_requested() -> void:
 	replacing = true
+	conveyor.show_empty(current_slot)
 	click_reader.set_enabled(false)
 
 	input_feedback.show_status( "AGUARDE A NOVA PECA...")

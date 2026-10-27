@@ -15,10 +15,12 @@ const ENTRY_POSITION := Vector2(-140, 88)
 const WORK_POSITION := Vector2(160, 88)
 const EXIT_POSITION := Vector2(460, 88)
 
-const SLOT_WIDTH := 14.0
-const SLOT_HEIGHT := 12.0
+const LEFT_EDGE = preload("res://art/Parts/404_left.png")
+const RIGHT_EDGE = preload("res://art/Parts/404_right.png")
+const SPACER = preload("res://art/Parts/404_space.png")
+const SLOT_HEIGHT := 20.0
 const SLOT_GAP := 2.0
-const BOARD_SIZE := Vector2(34, 30)
+var board_width: float = 0.0
 
 # Duração de cada movimento, em segundos.
 @export var movement_duration: float = 1.0
@@ -42,12 +44,8 @@ func _ready() -> void:
 	_belt_tile.atlas = BELT_SOURCE
 	_belt_tile.region = Rect2(0, BELT_Y, BELT_TILE_WIDTH, BELT_HEIGHT)
 	board.position = ENTRY_POSITION
-	var plate_style := StyleBoxFlat.new()
-	plate_style.bg_color = Color("5a6988")
-	plate_style.border_color = Color("333941")
-	plate_style.border_width_right = 2
-	plate_style.border_width_bottom = 2
-	$Board/BoardVisual.add_theme_stylebox_override("panel", plate_style)
+	board.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	$Board/BoardVisual.hide()
 
 	if demo_mode:
 		await enter_board()
@@ -106,44 +104,48 @@ func exit_board() -> void:
 
 # Recebe a lista de tipos sorteados pelo BoardGenerator.
 func set_slots(slot_types: Array[int]) -> void:
-	# Remove os indicadores da peça anterior.
-	for slot in slot_visuals:
-		slot.queue_free()
-
+	# Bordas, espaçadores e slots formam uma única caixa horizontal.
+	for child in slots_container.get_children():
+		slots_container.remove_child(child)
+		child.queue_free()
 	slot_visuals.clear()
-
-	var quantity := slot_types.size()
-
-	# Placa compacta: até duas colunas e duas linhas, na ordem de leitura.
-	var visual: Panel = $Board/BoardVisual
-	visual.position = -BOARD_SIZE / 2.0
-	visual.size = BOARD_SIZE
-	var rows := 1 if quantity <= 2 else 2
-	var total_height := rows * SLOT_HEIGHT + (rows - 1) * SLOT_GAP
-
-	for i in range(quantity):
+	board_width = LEFT_EDGE.get_width() + RIGHT_EDGE.get_width()
+	for kind in slot_types:
+		board_width += AssemblySlotVisual.module_width(kind)
+	board_width += maxi(0, slot_types.size() - 1) * SLOT_GAP
+	var x := -floorf(board_width / 2.0)
+	_add_board_module(LEFT_EDGE, x)
+	x += LEFT_EDGE.get_width()
+	for i in range(slot_types.size()):
 		var slot := AssemblySlotVisual.new()
 		slot.name = "Slot" + str(i + 1)
-		slot.size = Vector2(SLOT_WIDTH, SLOT_HEIGHT)
-		var row := i / 2
-		var columns := mini(2, quantity - row * 2)
-		var row_width := columns * SLOT_WIDTH + (columns - 1) * SLOT_GAP
-		slot.position = Vector2(-row_width / 2.0 + (i % 2) * (SLOT_WIDTH + SLOT_GAP), -total_height / 2.0 + row * (SLOT_HEIGHT + SLOT_GAP))
 		slot.kind = slot_types[i]
+		slot.size = Vector2(AssemblySlotVisual.module_width(slot.kind), SLOT_HEIGHT)
+		slot.position = Vector2(x, -SLOT_HEIGHT / 2.0)
 		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		slots_container.add_child(slot)
 		slot_visuals.append(slot)
-
-	# Destaca o primeiro slot.
+		x += slot.size.x
+		if i < slot_types.size() - 1:
+			_add_board_module(SPACER, x)
+			x += SLOT_GAP
+	_add_board_module(RIGHT_EDGE, x)
 	update_slot_progress(0)
 
+
+func _add_board_module(texture: Texture2D, x: float) -> void:
+	var module := Sprite2D.new()
+	module.texture = texture
+	module.centered = false
+	module.position = Vector2(x, -SLOT_HEIGHT / 2.0)
+	slots_container.add_child(module)
 
 func update_slot_progress(completed_count: int) -> void:
 	for i in range(slot_visuals.size()):
 		slot_visuals[i].set_state(i < completed_count, i == completed_count)
 
 func get_board_width() -> float:
-	return BOARD_SIZE.x
+	return board_width
 
 func _process(delta: float) -> void:
 	if moving:
@@ -180,9 +182,13 @@ func pulse_slot(index: int) -> void:
 func show_replacement(index: int) -> void:
 	if index < 0 or index >= slot_visuals.size():
 		return
-	var slot := slot_visuals[index]
-	if slot.kind == InteractionController.SlotKind.BAD_NAIL:
-		slot.kind = InteractionController.SlotKind.NAIL
-	elif slot.kind == InteractionController.SlotKind.RUSTY_SCREW:
-		slot.kind = InteractionController.SlotKind.SCREW
-	slot.queue_redraw()
+	slot_visuals[index].empty = false
+	slot_visuals[index].replaced = true
+	slot_visuals[index].queue_redraw()
+
+
+func show_empty(index: int) -> void:
+	if index < 0 or index >= slot_visuals.size():
+		return
+	slot_visuals[index].empty = true
+	slot_visuals[index].queue_redraw()

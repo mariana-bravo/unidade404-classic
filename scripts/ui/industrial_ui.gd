@@ -52,3 +52,17 @@ static func panel_style() -> StyleBoxFlat:
 	style.border_color = LINE
 	style.set_border_width_all(1)
 	return style
+
+# Painel do visor com cantos chanfrados; mantém a fábrica visível ao fundo.
+static func visor_panel(canvas: CanvasItem, area: Rect2, tint: Color) -> void:
+	var p := area.position
+	var s := area.size
+	var outline := PackedVector2Array([
+		p + Vector2(3, 0), p + Vector2(s.x - 3, 0),
+		p + Vector2(s.x, 3), p + Vector2(s.x, s.y - 3),
+		p + Vector2(s.x - 3, s.y), p + Vector2(3, s.y),
+		p + Vector2(0, s.y - 3), p + Vector2(0, 3),
+		p + Vector2(3, 0)])
+	canvas.draw_colored_polygon(outline, Color(BG, 0.76))
+	canvas.draw_polyline(outline, Color(tint, 0.48), 1.0)
+	canvas.draw_line(p + Vector2(4, 0), p + Vector2(minf(17, s.x - 4), 0), tint, 1.0)

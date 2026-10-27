@@ -82,22 +82,21 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	if not _stopped:
-		draw_rect(Rect2(16, 142, 288, 18), Color(U.BG, 0.88))
-		if _tool == InteractionController.Tool.NONE:
-			U.text(self, "1 MARTELO / 2 CHAVE", 192, 153, 10, NEUTRAL)
-		else:
-			draw_rect(Rect2(235, 145, 45, 13), U.PANEL)
-			draw_rect(Rect2(235, 145, 45, 13), ACTIVE, false)
-			U.text(self, "MARTELO" if _tool == InteractionController.Tool.HAMMER else "CHAVE", 238, 154, 10, ACTIVE)
+		U.visor_panel(self, Rect2(14, 138, 174, 25), ACTIVE)
+		U.visor_panel(self, Rect2(216, 138, 88, 25), ACTIVE)
+		U.text(self, "ESTADO DA UNIDADE", 20, 146, 8, ACTIVE)
+		U.text(self, "FERRAMENTA", 222, 146, 8, ACTIVE)
+		U.text(self, "MARTELO", 222, 157, 8, ACTIVE if _tool == InteractionController.Tool.HAMMER else NEUTRAL)
+		U.text(self, "CHAVE", 258, 157, 8, ACTIVE if _tool == InteractionController.Tool.SCREWDRIVER else NEUTRAL)
 		if _press_pulse > 0.0:
-			draw_line(Vector2(192, 158), Vector2(300, 158), U.UNIT)
+			draw_line(Vector2(222, 160), Vector2(282, 160), U.UNIT)
 		if _status != "":
-			U.text(self, _status, 20, 153, 10, U.MUTED, 164)
+			U.text(self, _status, 20, 157, 10, U.INK, 164)
 		elif _prepare_strength > 0.0:
-			U.text(self, "PREPARADO", 20, 153, 10, Color(AMBER, _prepare_strength))
+			U.text(self, "PREPARADO", 20, 157, 10, Color(AMBER, _prepare_strength))
 		if _ring_visible:
-			draw_arc(Vector2(292, 150), 8, 0, TAU, 32, U.LINE, 2)
-			draw_arc(Vector2(292, 150), 8, -PI / 2, -PI / 2 + TAU * maxf(_ratio, 0.001), 32, AMBER if _prepared else ACTIVE, 2)
+			draw_arc(Vector2(293, 151), 7, 0, TAU, 32, U.LINE, 1)
+			draw_arc(Vector2(293, 151), 7, -PI / 2, -PI / 2 + TAU * maxf(_ratio, 0.001), 32, AMBER if _prepared else ACTIVE, 1)
 	if _flash > 0.0:
 		draw_rect(Rect2(0, 0, 320, 180), Color(U.ERROR, _flash))
 
