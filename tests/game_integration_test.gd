@@ -120,8 +120,16 @@ func _run() -> void:
 
 	if "--capture" in OS.get_cmdline_user_args():
 		game.hud.set_robot("Estagiário Desempregado", GameState.serial)
+		_tick(0.2)
+		game.controller.set_slot(InteractionController.SlotKind.RUSTY_SCREW)
+		game.controller.gesture_double_click()
+		game.controller.gesture_click()
+		_button(true)
+		_tick(0.55)
+		await get_tree().create_timer(0.1).timeout
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("res://tests/hud_preview.png")
+		_button(false)
 	game.run_manager.finish_run(RunManager.MOTIVO_TEMPO_ESGOTADO)
 	_check(ScoreboardData.get_entries().size() == 1 and ScoreboardData.get_best_score() == game.run_manager.score, "Fim da partida registra placar")
 	_check(game.hud._best_label.text == "RECORDE %04d" % game.run_manager.score, "Novo recorde atualiza HUD")
@@ -139,4 +147,6 @@ func _run() -> void:
 	for suffix in ["", ".bak", ".tmp"]:
 		if FileAccess.file_exists(ScoreboardData.save_path + suffix):
 			DirAccess.remove_absolute(ScoreboardData.save_path + suffix)
+	# O servidor de áudio libera os playbacks em seu próximo ciclo.
+	await get_tree().create_timer(0.2).timeout
 	get_tree().quit(0 if failures == 0 else 1)

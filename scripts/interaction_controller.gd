@@ -44,6 +44,7 @@ func set_slot(new_kind:SlotKind) -> void:
 	tool = Tool.NONE
 	_prepare_left = 0.0
 	_prepare_pressed = false
+	phase_changed.emit()
 
 # A janela limita o início do pressionamento, não sua duração.
 func _process(delta: float) -> void:
@@ -153,7 +154,7 @@ func _gesture(gesture: String) -> void:
 		phase = Phase.DONE
 		slot_completed.emit()
 
-		
+
 # Chamado após o braço auxiliar substituir a peça.
 func replacement_finished() -> void:
 	if phase == Phase.WAIT_REPLACEMENT:

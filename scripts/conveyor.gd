@@ -179,3 +179,12 @@ func stop_movement() -> void:
 		_movement_tween.kill()
 		_movement_tween.finished.emit()
 	moving = false
+
+
+func pulse_slot(index: int) -> void:
+	if index < 0 or index >= slot_visuals.size():
+		return
+	var slot := slot_visuals[index]
+	slot.modulate = Color(1.4, 2.0, 1.4)
+	var pulse := slot.create_tween()
+	pulse.tween_property(slot, "modulate", Color.WHITE, 0.18)

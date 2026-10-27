@@ -4,6 +4,8 @@ extends Node
 signal click
 signal double_click
 signal press_started
+signal press_progress(seconds: float, ratio: float)
+signal cancelled
 signal press_released
 signal hold_started
 signal hold_progress(ratio: float)
@@ -73,6 +75,7 @@ func _process(delta: float) -> void:
 				if not _pressed or not _enabled:
 					return
 			hold_started.emit()
+		press_progress.emit(_press_time, clampf(_press_time / hold_completion_time, 0.0, 1.0))
 		if _holding:
 			var ratio := clampf(_press_time / hold_completion_time, 0.0, 1.0)
 			hold_progress.emit(ratio)
@@ -94,6 +97,7 @@ func reset() -> void:
 	_double_elapsed = 0.0
 	_holding = false
 	_hold_done = false
+	cancelled.emit()
 
 func set_enabled(value: bool) -> void:
 	_enabled = value
