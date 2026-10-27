@@ -1,45 +1,42 @@
 class_name AssemblySlotVisual
 extends Control
 const U = preload("res://scripts/ui/industrial_ui.gd")
-const NAIL_TEXTURE = preload("res://art/Parts/404_nail_sprite.tres")
-const BENT_NAIL_TEXTURE = preload("res://art/Parts/404_bent_nail_sprite.tres")
-const SCREW_TEXTURE = preload("res://art/Parts/404_screw_sprite.tres")
-const RUSTY_SCREW_TEXTURE = preload("res://art/Parts/404_rusty_screw_sprite.tres")
+const MODULE_BASE = preload("res://art/Parts/404_space.png")
+const TEXTURES = {
+	"wait_nail": preload("res://art/Parts/404_wait_nail.png"),
+	"wait_screw": preload("res://art/Parts/404_wait_screw.png"),
+	"bad_nail": preload("res://art/Parts/404_bad_nail.png"),
+	"bad_screw": preload("res://art/Parts/404_bad_screw.png"),
+	"empty_nail": preload("res://art/Parts/404_emply_nail.png"),
+	"empty_screw": preload("res://art/Parts/404_emply_screw.png"),
+	"complete_nail": preload("res://art/Parts/404_complit_nail.png"),
+	"complete_screw": preload("res://art/Parts/404_complet_screw.png"),
+}
 var kind: int = 0
 var completed: bool = false
 var active: bool = false
-
+var empty: bool = false
+var replaced: bool = false
+static func module_width(slot_kind: int) -> float:
+	return 7.0 if slot_kind == InteractionController.SlotKind.SCREW or slot_kind == InteractionController.SlotKind.RUSTY_SCREW else 6.0
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-
 func set_state(done: bool, selected: bool) -> void:
 	completed = done
 	active = selected
 	queue_redraw()
-
 func _draw() -> void:
-	var center := size / 2.0
-	if active:
-		# Pequeno marcador lateral, sem contorno em volta da peça.
-		draw_colored_polygon(PackedVector2Array([Vector2(0, 4), Vector2(3, 6), Vector2(0, 8)]), U.UNIT)
+	var screw := kind == InteractionController.SlotKind.SCREW or kind == InteractionController.SlotKind.RUSTY_SCREW
+	var state := "wait"
 	if completed:
-		draw_line(center + Vector2(-3, 0), center + Vector2(-1, 2), U.UNIT, 2)
-		draw_line(center + Vector2(-1, 2), center + Vector2(4, -3), U.UNIT, 2)
-	elif kind == InteractionController.SlotKind.NAIL:
-		_draw_part(NAIL_TEXTURE)
-	elif kind == InteractionController.SlotKind.SCREW:
-		_draw_part(SCREW_TEXTURE)
-	elif kind == InteractionController.SlotKind.BAD_NAIL:
-		_draw_part(BENT_NAIL_TEXTURE)
-	elif kind == InteractionController.SlotKind.RUSTY_SCREW:
-		_draw_part(RUSTY_SCREW_TEXTURE)
-
-
-func _draw_part(texture: Texture2D) -> void:
-	# A região do AtlasTexture exclui as margens transparentes dos PNGs originais.
-	var available := Vector2(maxf(size.x - 4, 1), maxf(size.y - 2, 1))
-	var dimensions := texture.get_size()
-	var factor := minf(available.x / dimensions.x, available.y / dimensions.y)
-	var target := (dimensions * factor).round()
-	var position := Vector2(4, floorf((size.y - target.y) / 2.0))
-	draw_texture_rect(texture, Rect2(position, target), false)
+		state = "complete"
+	elif empty:
+		state = "empty"
+	elif not replaced and (kind == InteractionController.SlotKind.BAD_NAIL or kind == InteractionController.SlotKind.RUSTY_SCREW):
+		state = "bad"
+	var texture: Texture2D = TEXTURES[state + ("_screw" if screw else "_nail")]
+	draw_texture_rect(MODULE_BASE, Rect2(Vector2.ZERO, size), true)
+	draw_texture(texture, Vector2(floorf((size.x - texture.get_width()) / 2.0), 0))
+	if active:
+		var center := floorf(size.x / 2.0)
+		draw_colored_polygon(PackedVector2Array([Vector2(center - 2, -5), Vector2(center + 2, -5), Vector2(center, -2)]), U.UNIT)

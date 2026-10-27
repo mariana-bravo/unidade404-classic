@@ -1,10 +1,21 @@
 extends Control
 const U = preload("res://scripts/ui/industrial_ui.gd")
+const MOTOR = preload("res://audio/sfx/screwdriver_loop.wav")
+var _hold_sound: AudioStreamPlayer
 var held: bool = false
 var elapsed: float = 0.0
 var _entries: Array[Dictionary] = []
 
 func _ready() -> void:
+	_hold_sound = AudioStreamPlayer.new()
+	_hold_sound.name = "ScoreboardHold"
+	_hold_sound.volume_db = -14.0
+	var motor_stream := MOTOR.duplicate() as AudioStreamWAV
+	motor_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	motor_stream.loop_begin = 0
+	motor_stream.loop_end = roundi(motor_stream.get_length() * motor_stream.mix_rate)
+	_hold_sound.stream = motor_stream
+	add_child(_hold_sound)
 	ScoreboardData.changed.connect(_refresh)
 	_refresh()
 
@@ -44,13 +55,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		get_viewport().set_input_as_handled()
 		held = event.pressed
+		if not held:
+			_hold_sound.stop()
 		elapsed = 0.0
 		queue_redraw()
 
 func _process(delta: float) -> void:
 	if held:
 		elapsed += delta
+		if elapsed >= Config.LIMIAR_SEGURAR and not _hold_sound.playing:
+			_hold_sound.play()
 		queue_redraw()
 		if elapsed >= Config.MENU_SEGURAR:
 			held = false
+			_hold_sound.stop()
 			get_tree().change_scene_to_file("res://scenes/menu.tscn")
