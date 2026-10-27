@@ -70,6 +70,7 @@ func _ready() -> void:
 		shutdown_fx.begin_boot(GameState.robot_name)
 		await shutdown_fx.boot_finished
 	run_manager.start_run()
+	$Music.play()
 
 	generate_new_board()
 	await conveyor.enter_board()
@@ -264,6 +265,7 @@ func _on_run_finished(
 	controller.set_process(false)
 	conveyor.stop_movement()
 	helper_arm.cancel()
+	$Music.stop()
 	var previous_best := ScoreboardData.get_best_score()
 	var ranked := false
 	if not run_manager.training:
