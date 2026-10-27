@@ -11,6 +11,8 @@
 
 [ext_resource type="Script" path="res://scripts/game_feedback.gd" id="8_feedback"]
 
+[ext_resource type="PackedScene" path="res://scenes/shutdown_fx.tscn" id="9_shutdown"]
+
 [node name="Game" type="Node2D" unique_id=32358537]
 script = ExtResource("1_lnu2h")
 
@@ -19,6 +21,14 @@ offset_right = 320.0
 offset_bottom = 180.0
 mouse_filter = 2
 color = Color(0.09019608, 0.105882354, 0.14117648, 1)
+
+[node name="WallLed" type="ColorRect" parent="."]
+offset_left = 284.0
+offset_top = 43.0
+offset_right = 290.0
+offset_bottom = 49.0
+color = Color(0.2, 0.02, 0.02, 1)
+mouse_filter = 2
 
 [node name="Conveyor" parent="." unique_id=1639852914 instance=ExtResource("2_lbhrr")]
 demo_mode = false
@@ -69,3 +79,5 @@ text = "AGUARDANDO..."
 [node name="InputFeedback" type="Control" parent="."]
 mouse_filter = 2
 script = ExtResource("8_feedback")
+
+[node name="ShutdownFx" parent="." instance=ExtResource("9_shutdown")]
