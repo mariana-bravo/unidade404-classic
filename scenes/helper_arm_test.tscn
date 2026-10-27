@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://dw5pjtmpmu5kx"]
+
+[ext_resource type="PackedScene" uid="uid://luj2yp2xtg8n" path="res://scenes/helper_arm.tscn" id="2_kh2vv"]
+
+[sub_resource type="GDScript" id="GDScript_wq1u4"]
+script/source = "extends Node2D
+
+const U = preload(\"res://scripts/ui/industrial_ui.gd\")
+
+@onready var helper_arm: HelperArm = $HelperArm
+
+var _step: int = 0
+
+
+func _ready() -> void:
+	# Espera a cena aparecer antes de iniciar a animação.
+	# Wait for the scene to appear before starting the animation.
+	helper_arm.replacement_finished.connect(_on_replacement_finished)
+
+	await get_tree().create_timer(0.35).timeout
+
+	_step = 1
+	queue_redraw()
+	helper_arm.replace_part(InteractionController.SlotKind.NAIL)
+
+
+func _draw() -> void:
+	# Fundo, esteira e uma área de trabalho provisória.
+	# Temporary background, conveyor belt and work area.
+	draw_rect(Rect2(0, 0, 320, 180), U.BG)
+
+	for y in [84, 137]:
+		draw_line(Vector2(12, y), Vector2(308, y), U.LINE, 1.0)
+
+	draw_rect(Rect2(43, 94, 234, 36), U.PANEL)
+	draw_rect(Rect2(43, 94, 234, 36), U.LINE, false, 1.0)
+	draw_rect(Rect2(138, 101, 44, 26), U.BG)
+	draw_rect(Rect2(138, 101, 44, 26), U.LINE, false, 1.0)
+
+	U.text(self, \"TESTE DO BRACO AUXILIAR\", 12, 20, 12, U.INK)
+
+	var status := \"\"
+	if _step == 0:
+		status = \"PREPARANDO...\"
+	elif _step == 1:
+		status = \"1/2 - REPOSICAO DO PREGO\"
+	elif _step == 2:
+		status = \"2/2 - REPOSICAO DO PARAFUSO\"
+	else:
+		status = \"ANIMACAO CONCLUIDA\"
+
+	U.text(self, status, 12, 40, 9, U.UNIT)
+
+
+func _on_replacement_finished() -> void:
+	if _step == 1:
+		# Segunda demonstração: parafuso.
+		# Second demonstration: screw.
+		_step = 2
+		queue_redraw()
+
+		await get_tree().create_timer(0.5).timeout
+		helper_arm.replace_part(InteractionController.SlotKind.SCREW)
+	else:
+		_step = 3
+		queue_redraw()
+		print(\"Teste do braço auxiliar concluído.\")
+		print(\"Helper arm test completed.\")
+"
+
+[node name="HelperArmTest" type="Node2D" unique_id=302216931]
+script = SubResource("GDScript_wq1u4")
+
+[node name="HelperArm" parent="." unique_id=1847434117 instance=ExtResource("2_kh2vv")]

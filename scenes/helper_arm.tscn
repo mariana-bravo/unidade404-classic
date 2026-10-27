@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://luj2yp2xtg8n"]
+
+[ext_resource type="Script" uid="uid://c6yoc343dhbjd" path="res://scripts/helper_arm.gd" id="1_lploc"]
+
+[node name="HelperArm" type="Node2D" unique_id=1847434117]
+script = ExtResource("1_lploc")
