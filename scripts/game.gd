@@ -120,7 +120,7 @@ func _on_tool_selected(_tool: int) -> void:
 
 # Uma etapa da ação foi realizada.
 func _on_step_completed() -> void:
-	input_feedback.show_status( "ACAO CORRETA!")
+	input_feedback.show_status( "AÇÃO CORRETA!")
 	update_interface()
 
 
@@ -159,7 +159,7 @@ func _on_slot_completed() -> void:
 	board_transitioning = true
 	click_reader.set_enabled(false)
 
-	input_feedback.show_status( "PECA CONCLUIDA!")
+	input_feedback.show_status( "PEÇA CONCLUÍDA!")
 
 	# A peça pronta sai.
 	await conveyor.exit_board()
@@ -187,7 +187,7 @@ func _on_replacement_requested() -> void:
 	conveyor.show_empty(current_slot)
 	click_reader.set_enabled(false)
 
-	input_feedback.show_status( "AGUARDE A NOVA PECA...")
+	input_feedback.show_status( "AGUARDE A NOVA PEÇA...")
 	update_interface()
 
 	await helper_arm.replace_part(current_board[current_slot], conveyor.get_slot_position(current_slot))
@@ -199,7 +199,7 @@ func _on_replacement_requested() -> void:
 	replacing = false
 	run_manager.automation_paused = false
 
-	input_feedback.show_status( "NOVA PECA INSTALADA!")
+	input_feedback.show_status( "NOVA PEÇA INSTALADA!")
 	update_interface()
 
 	click_reader.set_enabled(true)
@@ -269,7 +269,7 @@ func _on_run_finished(
 	var previous_best := ScoreboardData.get_best_score()
 	var ranked := false
 	if not run_manager.training:
-		ranked = ScoreboardData.submit_run(GameState.robot_name, final_score, total_life_time)
+		ranked = ScoreboardData.submit_run(GameState.robot_name, final_score, total_life_time, Config.PALETA[GameState.color_index])
 	shutdown_fx.begin({
 		"reason": reason, "name": GameState.robot_name, "serial": GameState.serial,
 		"score": final_score, "life_seconds": total_life_time,

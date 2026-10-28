@@ -17,7 +17,11 @@ func new_robot() -> void:
 		generated = NameGenerator.gerar_nome_robo()
 	robot_name = generated["nome"]
 	robot_gender = generated["genero"]
-	color_index = (serial - 1) % Config.PALETA.size()
+	# A primeira unidade pode usar qualquer cor; as seguintes não repetem a anterior.
+	if serial == 1 or Config.PALETA.size() <= 1:
+		color_index = randi_range(0, Config.PALETA.size() - 1)
+	else:
+		color_index = (color_index + randi_range(1, Config.PALETA.size() - 1)) % Config.PALETA.size()
 	score = 0
 	life_seconds = 0.0
 	level = 1

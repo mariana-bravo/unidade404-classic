@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://uh761s37ihvh"]
+
+[ext_resource type="Script" path="res://scripts/input_test.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cslmq2arup1fp" path="res://scripts/click_reader.gd" id="2_reader"]
+
+[node name="InputTest" type="Control" unique_id=1073021870]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="ClickReader" type="Node" parent="." unique_id=361125278]
+script = ExtResource("2_reader")
+
+[node name="Heading" type="Label" parent="." unique_id=2145248993]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 20.0
+offset_right = 315.0
+offset_bottom = 45.0
+theme_override_font_sizes/font_size = 14
+text = "TESTE DO LEITOR DE CLIQUES"
+autowrap_mode = 3
+
+[node name="Status" type="Label" parent="." unique_id=1248589036]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 78.0
+offset_right = 300.0
+offset_bottom = 114.0
+theme_override_font_sizes/font_size = 13
+text = "CLIQUE, DUPLO CLIQUE OU SEGURE"
+autowrap_mode = 3
+
+[node name="Info" type="Label" parent="." unique_id=534150542]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 147.0
+offset_right = 310.0
+offset_bottom = 169.0
+theme_override_font_sizes/font_size = 9
+text = "MARCO M1 — placeholder, ainda não é o jogo."
+autowrap_mode = 3

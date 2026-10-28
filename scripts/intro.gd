@@ -11,7 +11,7 @@ var visible_chars: float = 0.0
 const CHARS_PER_SECOND: float = 28.0
 const QUESTION_DELAY: float = 2.0
 
-@onready var text_label: Label = $Story
+@onready var text_label: RichTextLabel = $Story
 @onready var hint_label: Label = $Hint
 
 var _typing: bool = false
@@ -31,20 +31,22 @@ func _draw() -> void:
 
 func _ready() -> void:
 	# Preserva a identidade visual / Preserve the visual identity.
-	text_label.add_theme_font_override("font", U.FONT)
-	text_label.add_theme_font_size_override("font_size", 20)
-	text_label.add_theme_color_override("font_color", U.INK)
+	text_label.add_theme_font_override("normal_font", U.FONT)
+	text_label.add_theme_font_size_override("normal_font_size", 14)
+	text_label.add_theme_color_override("default_color", U.INK)
 
 	hint_label.add_theme_font_override("font", U.FONT)
 	hint_label.add_theme_font_size_override("font_size", 10)
 	hint_label.add_theme_color_override("font_color", U.MUTED)
 	hint_label.text = "CLIQUE: COMPLETAR / PRÓXIMO"
 
+	if GameState.robot_name.is_empty():
+		GameState.new_robot()
 	pages = [
 		"A FÁBRICA NUNCA PARA.",
-		"Humanos erram. Eles têm justificativas.",
+		"Humanos erram.\nEles têm justificativas.",
 		"Robôs não têm.",
-		"UNIDADE 404: %s. ATIVADA. NÃO ERRE. NÃO DEMORE."
+		"%s\nUNIDADE 404: ATIVADA.\n\nNÃO ERRE.\nNÃO DEMORE."
 		% GameState.robot_name
 	]
 
@@ -132,7 +134,16 @@ func _advance_story() -> void:
 
 func _show_page() -> void:
 	# Exibe a próxima página da história / Display the next story page.
-	text_label.text = pages[page]
+	text_label.clear()
+	if page == pages.size() - 1:
+		text_label.push_font_size(18)
+		text_label.push_color(Config.PALETA[GameState.color_index])
+		text_label.add_text(GameState.robot_name)
+		text_label.pop()
+		text_label.pop()
+		text_label.add_text("\nUNIDADE 404: ATIVADA.\n\nNÃO ERRE.\nNÃO DEMORE.")
+	else:
+		text_label.add_text(pages[page])
 	visible_chars = 0.0
 	text_label.visible_characters = 0
 	_typing = true

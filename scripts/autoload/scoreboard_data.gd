@@ -1,10 +1,11 @@
 extends Node
 ## Binário little-endian: U404, versão u16, quantidade u8;
-## por linha: tamanho UTF-8 u16, nome, pontos u32, segundos float64.
+## por linha: tamanho UTF-8 u16, nome, pontos u32, segundos float64, cor RGBA u32 (v2; lê também v1 sem cor).
 signal changed
 
 const MAGIC := "U404"
-const VERSION := 1
+const VERSION := 2
+const LEGACY_COLOR := Color("dae0ea")
 const MAX_ENTRIES := 3
 const MAX_NAME_BYTES := 256
 const MAX_FILE_BYTES := 1024
@@ -21,10 +22,10 @@ func get_entries() -> Array[Dictionary]:
 func get_best_score() -> int:
 	return int(_entries[0]["score"]) if not _entries.is_empty() else 0
 
-func submit_run(robot_name: String, score: int, life_seconds: float) -> bool:
+func submit_run(robot_name: String, score: int, life_seconds: float, robot_color: Color = LEGACY_COLOR) -> bool:
 	if not _valid_entry(robot_name, score, life_seconds):
 		return false
-	var entry := {"name": robot_name, "score": score, "life_seconds": life_seconds}
+	var entry := {"name": robot_name, "score": score, "life_seconds": life_seconds, "color": robot_color.to_rgba32()}
 	# Empate exato mantém as vidas que já estavam no placar.
 	var index := 0
 	while index < _entries.size() and not _better(entry, _entries[index]):
@@ -64,6 +65,7 @@ func save_scores() -> Error:
 		file.store_buffer(name_bytes)
 		file.store_32(entry["score"])
 		file.store_double(entry["life_seconds"])
+		file.store_32(entry["color"])
 	file.flush()
 	var error := file.get_error()
 	file.close()
@@ -88,7 +90,10 @@ func _read_file(path: String) -> Dictionary:
 	var size := file.get_length()
 	if size < 7 or size > MAX_FILE_BYTES:
 		return invalid
-	if file.get_buffer(4).get_string_from_ascii() != MAGIC or file.get_16() != VERSION:
+	if file.get_buffer(4).get_string_from_ascii() != MAGIC:
+		return invalid
+	var version := file.get_16()
+	if version != 1 and version != VERSION:
 		return invalid
 	var count := file.get_8()
 	if count > MAX_ENTRIES:
@@ -98,7 +103,7 @@ func _read_file(path: String) -> Dictionary:
 		if size - file.get_position() < 2:
 			return invalid
 		var length := file.get_16()
-		if length < 1 or length > MAX_NAME_BYTES or size - file.get_position() < length + 12:
+		if length < 1 or length > MAX_NAME_BYTES or size - file.get_position() < length + (16 if version >= 2 else 12):
 			return invalid
 		var bytes := file.get_buffer(length)
 		var robot_name := bytes.get_string_from_utf8()
@@ -106,9 +111,10 @@ func _read_file(path: String) -> Dictionary:
 			return invalid
 		var score := file.get_32()
 		var seconds := file.get_double()
+		var color := file.get_32() if version >= 2 else LEGACY_COLOR.to_rgba32()
 		if not _valid_entry(robot_name, score, seconds):
 			return invalid
-		entries.append({"name": robot_name, "score": score, "life_seconds": seconds})
+		entries.append({"name": robot_name, "score": score, "life_seconds": seconds, "color": color})
 	if file.get_position() != size or file.get_error() != OK:
 		return invalid
 	return {"valid": true, "entries": entries}

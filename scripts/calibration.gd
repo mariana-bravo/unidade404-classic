@@ -303,7 +303,7 @@ func _draw() -> void:
 	if _page_index <= 0:
 		U.text(
 			self,
-			"CLIQUE ESQUERDO: PRÓXIMA TELA",
+			"CLIQUE: PRÓXIMA TELA",
 			8, 174, 8, U.MUTED, 304,
 			HORIZONTAL_ALIGNMENT_CENTER
 		)

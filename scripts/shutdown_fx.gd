@@ -103,6 +103,7 @@ func begin(result: Dictionary, wall_led: ColorRect) -> void:
 	_requires_release = _physical_down
 	_cause.text = "TEMPO ESGOTADO" if result["reason"] == RunManager.MOTIVO_TEMPO_ESGOTADO else "AÇÃO INCORRETA"
 	_identity.text = result["name"].to_upper()
+	_identity.add_theme_color_override("font_color", Config.PALETA[GameState.color_index])
 	var seconds := int(result["life_seconds"])
 	_points.text = str(result["score"])
 	_life.text = "%02d:%02d" % [seconds / 60, seconds % 60]
@@ -127,6 +128,7 @@ func begin_boot(robot_name: String) -> void:
 	_boot_text.text = "INICIALIZANDO"
 	_boot_serial.text = "Nº %03d" % GameState.serial
 	_boot_name.text = robot_name.to_upper()
+	_boot_name.add_theme_color_override("font_color", Config.PALETA[GameState.color_index])
 	U.fit_label(_boot_name, 272, 20)
 	_boot_fill.size.x = 0
 	_material.set_shader_parameter("image_scale", Vector2(0.008, 0.012))
@@ -178,7 +180,7 @@ func _process(delta: float) -> void:
 			_material.set_shader_parameter("image_scale", Vector2(lerpf(0.008, 1.0, minf(t / 0.25, 1.0)), lerpf(0.012, 1.0, clampf((t - 0.25) / 0.45, 0.0, 1.0))))
 			_boot_fill.size.x = 272 * t
 			_boot_text.text = "UNIDADE ATIVADA" if t >= 0.7 else "INICIALIZANDO"
-			if t >= 1.0:
+			if elapsed >= Config.REBOOT_DURACAO + Config.REBOOT_LEITURA:
 				_collapse.visible = false
 				_boot_panel.visible = false
 				state = State.HIDDEN

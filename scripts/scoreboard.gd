@@ -37,14 +37,16 @@ func _draw() -> void:
 		draw_line(Vector2(12, y + 20), Vector2(308, y + 20), U.LINE)
 		U.text(self, "%02d" % (i + 1), 18, y + 13, 10, U.AMBER if i == 0 else U.MUTED)
 		var name_text := "---"
+		var name_color := U.INK
 		var life_text := "---"
 		var score_text := "---"
 		if i < _entries.size():
 			name_text = _entries[i]["name"].to_upper()
+			name_color = Color.hex(_entries[i]["color"])
 			var seconds := int(_entries[i]["life_seconds"])
 			life_text = "%02d:%02d" % [seconds / 60, seconds % 60]
 			score_text = str(_entries[i]["score"])
-		U.text(self, name_text, 40, y + 13, 10, U.INK, 143)
+		U.text(self, name_text, 40, y + 13, 10, name_color, 143)
 		U.text(self, life_text, 191, y + 13, 10, U.MUTED, 58)
 		U.text(self, score_text, 251, y + 13, 10, U.AMBER if i == 0 else U.INK, 50, HORIZONTAL_ALIGNMENT_RIGHT)
 	U.text(self, "SEGURAR: VOLTAR", 24, 175, 10, U.MUTED)

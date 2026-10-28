@@ -11,6 +11,8 @@ const MENU_SEGURAR: float = 0.80
 const DESLIGAMENTO_DURACAO: float = 2.0
 const GAME_OVER_PROTECAO: float = 1.5
 const REBOOT_DURACAO: float = 1.2
+# Tempo de leitura com a tela totalmente aberta, antes de iniciar a partida.
+const REBOOT_LEITURA: float = 3.0
 const GAME_OVER_ESPERA: float = 5.0
 const TEMPO_SUBSTITUICAO: float = 1.0
 const BARRA_INICIAL: float = 8.0

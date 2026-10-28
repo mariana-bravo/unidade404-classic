@@ -12,13 +12,15 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_script")
 
-[node name="Story" type="Label" parent="." unique_id=1447773931]
+[node name="Story" type="RichTextLabel" parent="." unique_id=1447773931]
 layout_mode = 0
 offset_left = 23.0
-offset_top = 48.0
+offset_top = 36.0
 offset_right = 298.0
-offset_bottom = 132.0
-theme_override_font_sizes/font_size = 14
+offset_bottom = 144.0
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 14
+scroll_active = false
 autowrap_mode = 3
 
 [node name="Hint" type="Label" parent="." unique_id=1428708803]

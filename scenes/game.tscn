@@ -6,39 +6,33 @@
 [ext_resource type="Script" uid="uid://cej7vg6a82qd6" path="res://scripts/interaction_controller.gd" id="2_lnu2h"]
 [ext_resource type="Script" uid="uid://dxrhwxvummwol" path="res://scripts/run_manager.gd" id="3_p57ef"]
 [ext_resource type="Script" uid="uid://ptmscpkv0nyw" path="res://scripts/board_generator.gd" id="5_iywne"]
-
-[ext_resource type="PackedScene" path="res://scenes/visor_hud.tscn" id="7_hud"]
-
-[ext_resource type="Script" path="res://scripts/game_feedback.gd" id="8_feedback"]
-
+[ext_resource type="PackedScene" uid="uid://k1a8u1vitg2b" path="res://scenes/visor_hud.tscn" id="7_hud"]
+[ext_resource type="Script" uid="uid://cv2fn2u62usft" path="res://scripts/game_feedback.gd" id="8_feedback"]
 [ext_resource type="PackedScene" path="res://scenes/shutdown_fx.tscn" id="9_shutdown"]
-
-[ext_resource type="Texture2D" path="res://art/Background/404_background.png" id="10_background"]
-
-[ext_resource type="PackedScene" path="res://scenes/helper_arm.tscn" id="11_helper_arm"]
-
-[ext_resource type="AudioStream" path="res://audio/retro-bgm-chan-vs-robbot_vs-534622.mp3" id="12_music"]
+[ext_resource type="Texture2D" uid="uid://dbrw1jfadyax8" path="res://art/Background/404_background.png" id="10_background"]
+[ext_resource type="PackedScene" uid="uid://luj2yp2xtg8n" path="res://scenes/helper_arm.tscn" id="11_helper_arm"]
+[ext_resource type="AudioStream" uid="uid://b5xll3rpdn8fl" path="res://audio/retro-bgm-chan-vs-robbot_vs-534622.mp3" id="12_music"]
 
 [node name="Game" type="Node2D" unique_id=32358537]
 script = ExtResource("1_lnu2h")
 
-[node name="Background" type="Sprite2D" parent="."]
+[node name="Background" type="Sprite2D" parent="." unique_id=1373882033]
 texture_filter = 1
 texture = ExtResource("10_background")
 centered = false
 
-[node name="WallLed" type="ColorRect" parent="."]
+[node name="WallLed" type="ColorRect" parent="." unique_id=208281807]
 offset_left = 299.0
 offset_top = 43.0
 offset_right = 304.0
 offset_bottom = 48.0
-color = Color(0.23137255, 0.09019608, 0.14509804, 1)
 mouse_filter = 2
+color = Color(0.23137255, 0.09019608, 0.14509805, 1)
 
 [node name="Conveyor" parent="." unique_id=1639852914 instance=ExtResource("2_lbhrr")]
 demo_mode = false
 
-[node name="HelperArm" parent="." instance=ExtResource("11_helper_arm")]
+[node name="HelperArm" parent="." unique_id=155255939 instance=ExtResource("11_helper_arm")]
 z_index = 4
 
 [node name="RunManager" type="Node" parent="." unique_id=1042769601]
@@ -55,15 +49,17 @@ script = ExtResource("5_iywne")
 script = ExtResource("1_yqjtg")
 metadata/_custom_type_script = "uid://cslmq2arup1fp"
 
-[node name="VisorHud" parent="." instance=ExtResource("7_hud")]
+[node name="VisorHud" parent="." unique_id=88104475 instance=ExtResource("7_hud")]
 
-[node name="InputFeedback" type="Control" parent="."]
+[node name="InputFeedback" type="Control" parent="." unique_id=1433857097]
 z_index = 3
+layout_mode = 3
+anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("8_feedback")
 
-[node name="ShutdownFx" parent="." instance=ExtResource("9_shutdown")]
+[node name="ShutdownFx" parent="." unique_id=1163706137 instance=ExtResource("9_shutdown")]
 
-[node name="Music" type="AudioStreamPlayer" parent="."]
+[node name="Music" type="AudioStreamPlayer" parent="." unique_id=1424957747]
 stream = ExtResource("12_music")
 volume_db = -20.0

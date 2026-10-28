@@ -29,6 +29,8 @@ func _ready() -> void:
 	for texture in FOCUS_FRAMES:
 		frames.add_frame("default", texture)
 	_focus = AnimatedSprite2D.new()
+	# Acima das bordas e dos módulos vizinhos (z=0), abaixo da esteira (z=2).
+	_focus.z_index = 1
 	_focus.sprite_frames = frames
 	_focus.centered = false
 	_focus.position = ((size - FOCUS_FRAMES[0].get_size()) / 2.0).floor()
