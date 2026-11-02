@@ -1,0 +1,89 @@
+UNIDADE 404 - PERSONAL AND EDUCATIONAL NON-COMMERCIAL LICENSE
+Version 1.0
+
+Copyright (c) 2026 Mariana Bravo, Joao Victor Freitas, and Alysson Lucas.
+Author names: Mariana Bravo; João Victor Freitas; Alysson Lucas.
+
+1. SCOPE AND OWNERSHIP
+
+This license applies to the original source code, artwork, documentation,
+and other original materials owned by the authors named above (the "Team")
+in Unidade 404: Futuro Não Encontrado (the "Work"). Ownership remains with
+the respective copyright holders. Rights not expressly granted are reserved.
+Third-party materials are excluded as described in section 6.
+
+2. PERMITTED PERSONAL AND EDUCATIONAL USE
+
+The Team grants you a royalty-free, non-exclusive permission to download,
+install, run, inspect, and make copies of the Work solely for personal use
+or educational activities, in either case without commercial purpose or
+financial gain. You may modify the Work locally for your own learning or
+private experimentation under the same restrictions.
+
+Non-commercial classroom demonstrations and academic presentations are
+permitted, provided that the original authors are credited. This permission
+does not authorize distributing copies to others beyond section 4.
+
+3. NO COMMERCIAL EXPLOITATION
+
+Without prior written permission from the Team, you may not sell, rent,
+license for a fee, monetize, or otherwise commercially exploit the Work
+or modifications of the Team's original materials. This includes charging
+for access to the game, monetizing redistributed builds, or incorporating
+the Team's original code or artwork into a commercial product or service.
+
+Providing a copy free of charge does not by itself make a use non-commercial.
+The use must also have no commercial purpose or financial gain. Merely
+being a nonprofit organization does not exempt a use from these conditions.
+
+4. DISTRIBUTION AND PUBLICATION
+
+Sharing a link to the Team's official repository or releases is permitted.
+Redistribution, uploading copies to another game portal or store, public
+release of modified builds, or other republication requires prior written
+permission from the Team. Any authorized redistribution must include this
+license and preserve all applicable copyright, attribution, and third-party
+license notices. Modifications must be clearly identified as such.
+
+Viewing and forking rights granted under GitHub's applicable terms of service,
+and rights that cannot lawfully be restricted, remain unaffected. A public
+repository does not by itself grant permission to commercially exploit or
+republish the Work outside those rights.
+
+5. AUTHORSHIP AND CREDITS
+
+You must not claim authorship of the original game or the Team's original
+materials, publish them under another authorship, or remove or misrepresent
+the Team's credits. You may truthfully identify your own modifications,
+without claiming ownership of the original work or implying Team endorsement.
+
+6. THIRD-PARTY MATERIALS AND EXISTING RIGHTS
+
+Godot, fonts, sound effects, music, palettes, and other third-party materials
+remain subject to their respective licenses. Consult README.md,
+readme_pt.md, audio/CREDITS.md, and the license notices supplied with those
+resources. The Team does not claim ownership of those materials.
+
+This license does not restrict permissions independently granted by their
+copyright holders, change their licenses, or revoke rights previously granted
+under any applicable license. It covers only rights the Team is entitled
+to license. Nothing here limits exceptions or rights provided by applicable law.
+
+7. NO WARRANTY
+
+To the extent permitted by applicable law, the Work is provided "AS IS",
+without warranties of any kind, express or implied. To that same extent,
+the Team is not liable for losses or damages arising from use of the Work.
+
+8. ADDITIONAL PERMISSIONS AND COMPLIANCE
+
+Permissions in this license are conditional on compliance with its terms.
+Activities outside the permissions expressly granted require prior written
+authorization from the Team. Contact the Team through:
+
+Mariana Bravo: https://github.com/mariana-bravo
+João Victor Freitas: https://github.com/joaov-freitas
+Alysson Lucas: https://github.com/AlyssonLucasVFSoares
+
+This is a custom non-commercial license, not the GNU GPL, MIT License,
+or an Open Source Initiative-approved open-source license.
